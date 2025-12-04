@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Gift Stacker</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+
+<body>
+    <div id="game-container">
+        <div id="ui-layer">
+            <div id="score-container">
+                <div class="gift-score-box">
+                    <div class="lid"></div>
+                    <div class="box-body">
+                        <span class="score-label">Score</span>
+                        <span id="score" class="score-value">0</span>
+                    </div>
+                </div>
+                <div id="high-score">Best: 0</div>
+            </div>
+            <button id="pause-btn">❚❚</button>
+
+            <div id="start-screen">
+                <h1>Gift Stacker</h1>
+                <div class="gift-score-box large">
+                    <div class="lid"></div>
+                    <div class="box-body">
+                        <span class="score-label">High Score</span>
+                        <span id="start-high-score" class="score-value">0</span>
+                    </div>
+                </div>
+                <button id="start-btn">Start Game</button>
+                <button id="settings-btn" class="secondary-btn">Settings</button>
+            </div>
+
+            <div id="settings-modal" class="hidden">
+                <h2>Settings</h2>
+                <div class="setting-row">
+                    <label>Slide Speed: <span id="slide-speed-val">1.0x</span></label>
+                    <input type="range" id="slide-speed" min="0.5" max="2.0" step="0.1" value="1.0">
+                </div>
+                <div class="setting-row">
+                    <label>Drop Speed: <span id="drop-speed-val">1.0x</span></label>
+                    <input type="range" id="drop-speed" min="0.5" max="2.0" step="0.1" value="1.0">
+                </div>
+                <button id="close-settings-btn">Save & Close</button>
+            </div>
+
+            <div id="game-over-screen" class="hidden">
+                <h1>Game Over</h1>
+                <div id="new-record-msg" class="hidden new-record">New High Score!</div>
+                <div class="gift-score-box large">
+                    <div class="lid"></div>
+                    <div class="box-body">
+                        <span class="score-label">Score</span>
+                        <span id="final-score" class="score-value">0</span>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button id="restart-btn">Try Again</button>
+                </div>
+                <p id="game-over-high-score">High Score: 0</p>
+            </div>
+        </div>
+        <div id="scene">
+            <!-- Physics bodies will be mapped to DOM elements here -->
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+
+</html>
