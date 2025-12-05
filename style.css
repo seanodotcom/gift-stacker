@@ -1,3 +1,10 @@
+:root {
+    --bg-gradient-start: #165B33;
+    --bg-gradient-end: #BB2528;
+    --box-color: #d32f2f;
+    --ribbon-color: #ffd700;
+}
+
 body,
 html {
     margin: 0;
@@ -5,11 +12,25 @@ html {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    /* Christmas-themed gradient: Deep Green to Red with a touch of Gold */
-    background: linear-gradient(to bottom, #165B33, #BB2528);
+    /* Theme-based gradient */
+    background: linear-gradient(to bottom, var(--bg-gradient-start), var(--bg-gradient-end));
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     touch-action: none;
     /* Prevent zoom/scroll on mobile */
+    transition: background 0.5s ease;
+}
+
+/* Theme: Standard */
+/* Theme: Standard */
+body.theme-standard {
+    --bg-gradient-start: #4facfe;
+    --bg-gradient-end: #00f2fe;
+}
+
+/* Theme: Christmas (Default) */
+body.theme-christmas {
+    --bg-gradient-start: #165B33;
+    --bg-gradient-end: #BB2528;
 }
 
 /* Background Elements */
@@ -70,10 +91,12 @@ html {
     transform-origin: center center;
     box-sizing: border-box;
     background-color: #d32f2f;
-    border: 2px solid #b71c1c;
+    border: 2px solid rgba(0, 0, 0, 0.1);
     display: flex;
     justify-content: center;
     align-items: center;
+    /* Sharper 3D Shadow */
+    box-shadow: inset -4px -4px 0 rgba(0, 0, 0, 0.2);
 }
 
 /* Gift Ribbon Styling */
@@ -198,9 +221,10 @@ html {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     position: relative;
     overflow: hidden;
+    /* Sharper 3D Shadow */
+    box-shadow: inset -4px -4px 0 rgba(0, 0, 0, 0.2);
 }
 
 .gift-score-box .box-body::before {
@@ -213,6 +237,7 @@ html {
     height: 100%;
     background-color: #ffd700;
     z-index: 0;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
 }
 
 .score-label {
@@ -499,6 +524,67 @@ button {
     margin-bottom: 0;
 }
 
+/* Tighten Settings */
+.setting-row {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+.theme-toggles {
+    display: flex;
+    gap: 0;
+    width: 100%;
+    margin-top: 5px;
+}
+
+.theme-btn {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    background: #f9f9f9;
+    font-weight: bold;
+    color: #666;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    border-radius: 0;
+    /* Square by default */
+}
+
+/* First button: Left rounded corners */
+.theme-btn:first-child {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-right: none;
+    /* Merge border */
+}
+
+/* Last button: Right rounded corners */
+.theme-btn:last-child {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+/* Active State */
+.theme-btn.active {
+    background: #e3f2fd;
+    /* Light blue bg */
+    color: #1565c0;
+    /* Blue text */
+    border-color: #1565c0;
+    z-index: 1;
+    /* Bring above neighbor borders */
+    box-shadow: 0 0 0 1px #1565c0;
+    /* Ensure border visibility */
+}
+
+.theme-btn:hover:not(.active) {
+    background: #eee;
+}
+
 /* Modal Styles */
 .modal {
     position: fixed;
@@ -506,7 +592,6 @@ button {
     left: 50%;
     transform: translate(-50%, -50%);
     background: rgba(255, 255, 255, 0.95);
-    padding: 30px;
     border-radius: 20px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
     min-width: 320px;
@@ -515,10 +600,27 @@ button {
     z-index: 100;
     display: flex;
     flex-direction: column;
-    gap: 15px;
     animation: fadeIn 0.3s ease-out;
     max-height: 90vh;
     overflow-y: auto;
+
+    /* Tight layout adjustments */
+    gap: 10px;
+    padding: 20px;
+}
+
+/* Tighten Settings Rows further */
+.setting-row {
+    margin-bottom: 5px !important;
+}
+
+.setting-row label {
+    font-size: 0.9rem;
+    margin-bottom: 2px;
+}
+
+.setting-row input[type=range] {
+    margin: 0;
 }
 
 @keyframes fadeIn {
@@ -596,10 +698,98 @@ button {
     flex-direction: column;
     align-items: center;
     gap: 15px;
-    background: rgba(255, 255, 255, 0.9);
-    padding: 40px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 30px;
     border-radius: 20px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 400px;
+    /* Ensure padding on mobile */
+    box-sizing: border-box;
+}
+
+#start-screen h2 {
+    font-size: 1.1rem;
+    color: #555;
+    margin: -10px 0 20px 0;
+    font-weight: normal;
+}
+
+.start-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+    justify-content: center;
+}
+
+.icon-btn-settings {
+    background: #757575;
+    /* Neutral Gear Color */
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    padding: 0;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.icon-btn-settings:hover {
+    background: #616161;
+    transform: rotate(90deg);
+    /* Subtle rotation on hover */
+}
+
+/* Constants rotation animation for the gear when idle? No, user asked for "slowly, subtly rotates" */
+/* Let's make it always rotate very slowly */
+.icon-btn-settings {
+    animation: simpleSpin 10s linear infinite;
+}
+
+@keyframes simpleSpin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.icon-btn-settings:hover {
+    animation-play-state: paused;
+    /* Pause on hover to interact? or speed up? User said "subtly rotates". Let's keep it spinning. */
+    background: #616161;
+}
+
+.icon-btn-small {
+    background: #1976d2;
+    /* distinct blue for navigation */
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+.icon-btn-small:hover {
+    transform: scale(1.1);
+    background: #1565c0;
 }
 
 .hidden {

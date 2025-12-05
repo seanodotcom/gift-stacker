@@ -27,6 +27,82 @@ const BASE_GRAVITY = 1.4;
 let slideSpeedMult = parseFloat(localStorage.getItem('giftStackerSlideSpeed')) || 1.0;
 let dropSpeedMult = parseFloat(localStorage.getItem('giftStackerDropSpeed')) || 1.0;
 let randomSizes = localStorage.getItem('giftStackerRandomSizes') === 'true'; // Default false unless 'true' string present
+let soundEnabled = localStorage.getItem('giftStackerSound') !== 'false'; // Default true
+let currentTheme = localStorage.getItem('giftStackerTheme') || 'christmas';
+
+const Sound = {
+    ctx: null,
+    init: function () {
+        if (!this.ctx) {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    },
+    playTone: function (freq, type, duration, vol = 0.1) {
+        if (!soundEnabled || !this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + duration);
+    },
+    playWhoosh: function () {
+        // Filtered white noise for whoosh
+        if (!soundEnabled || !this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle'; // Softer than noise, simplified whoosh
+        osc.frequency.setValueAtTime(200, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.2);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.2);
+    },
+    playLand: function () {
+        // "Ba-dump" - Low thud
+        if (!soundEnabled || !this.ctx) return;
+
+        // Thud 1
+        this.playTone(80, 'sine', 0.1, 0.2);
+
+        // Thud 2 slightly later
+        setTimeout(() => {
+            this.playTone(60, 'sine', 0.1, 0.2);
+        }, 80);
+    },
+    playDrop: function () {
+        this.playWhoosh();
+    },
+    playScore: function () {
+        if (!soundEnabled || !this.ctx) return;
+        // Happy chime (Two-tone perfect 5th)
+        this.playTone(523.25, 'sine', 0.15, 0.1); // C5
+        setTimeout(() => this.playTone(783.99, 'sine', 0.2, 0.1), 100); // G5
+    },
+    playGameOver: function (isHighScore) {
+        if (!soundEnabled || !this.ctx) return;
+
+        if (isHighScore) {
+            // Ta-daa! Major Arpeggio
+            this.playTone(523.25, 'triangle', 0.2, 0.2); // C5
+            setTimeout(() => this.playTone(659.25, 'triangle', 0.2, 0.2), 150); // E5
+            setTimeout(() => this.playTone(783.99, 'triangle', 0.2, 0.2), 300); // G5
+            setTimeout(() => this.playTone(1046.50, 'triangle', 0.6, 0.3), 450); // C6
+        } else {
+            // Pleasant Conclusion (Descending)
+            this.playTone(392.00, 'sine', 0.4, 0.1); // G4
+            setTimeout(() => this.playTone(329.63, 'sine', 0.5, 0.1), 200); // E4
+            setTimeout(() => this.playTone(261.63, 'sine', 0.8, 0.1), 400); // C4
+        }
+    }
+};
 
 let boxSize = 60;
 let platformWidth = 500;
@@ -40,6 +116,7 @@ const quitGameBtn = document.getElementById('quit-game-btn');
 const releaseNotesBtn = document.getElementById('release-notes-btn');
 const releaseNotesModal = document.getElementById('release-notes-modal');
 const closeNotesBtn = document.getElementById('close-notes-btn');
+const homeBtn = document.getElementById('home-btn');
 
 const quitConfirmModal = document.getElementById('quit-confirm-modal');
 const confirmQuitBtn = document.getElementById('confirm-quit-btn');
@@ -58,6 +135,10 @@ const dropSpeedInput = document.getElementById('drop-speed');
 const slideSpeedVal = document.getElementById('slide-speed-val');
 const dropSpeedVal = document.getElementById('drop-speed-val');
 const randomSizesInput = document.getElementById('random-sizes');
+const soundEnabledInput = document.getElementById('sound-enabled');
+// const themeSelect = document.getElementById('theme-select'); // Removed
+const themeBtnChristmas = document.getElementById('theme-christmas');
+const themeBtnStandard = document.getElementById('theme-standard');
 const bounceInput = document.getElementById('bounce');
 const bounceVal = document.getElementById('bounce-val');
 const resetScoreBtn = document.getElementById('reset-score-btn');
@@ -79,6 +160,17 @@ const newRecordMsg = document.getElementById('new-record-msg');
 // Additional State
 let restitutionVal = parseFloat(localStorage.getItem('giftStackerBounce')) || 0.5;
 
+function applyTheme(theme) {
+    document.body.className = `theme-${theme}`;
+    if (theme === 'christmas') {
+        christmasBg.style.display = 'block';
+        if (snowSystem) snowSystem.active = true;
+    } else {
+        christmasBg.style.display = 'none';
+        if (snowSystem) snowSystem.active = false;
+    }
+}
+
 function init() {
     // Create engine
     engine = Engine.create();
@@ -86,6 +178,31 @@ function init() {
     // Setup input
     document.addEventListener('mousedown', handleInput);
     document.addEventListener('touchstart', handleInput, { passive: false });
+
+    // Keyboard Controls
+    document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space') {
+            e.preventDefault(); // Prevent scroll
+            if (gameState === 'PLAYING' && !isPaused) {
+                dropBox();
+            }
+        } else if (e.code === 'Enter') {
+            if (gameState === 'START' || gameState === 'GAMEOVER') {
+                startGame();
+            }
+        } else if (e.code === 'Escape') {
+            if (gameState === 'PLAYING') {
+                isPaused = !isPaused;
+                if (isPaused) {
+                    pauseMenuModal.classList.remove('hidden');
+                } else {
+                    pauseMenuModal.classList.add('hidden');
+                }
+            } else if (gameState === 'GAMEOVER') {
+                quitGame();
+            }
+        }
+    });
 
     startBtn.addEventListener('click', startGame);
     restartBtn.addEventListener('click', startGame);
@@ -118,6 +235,8 @@ function init() {
         pauseMenuModal.classList.remove('hidden');
     });
 
+    homeBtn.addEventListener('click', quitGame);
+
     releaseNotesBtn.addEventListener('click', () => {
         pauseMenuModal.classList.add('hidden');
         releaseNotesModal.classList.remove('hidden');
@@ -137,6 +256,16 @@ function init() {
     slideSpeedInput.addEventListener('input', updateSettingsUI);
     dropSpeedInput.addEventListener('input', updateSettingsUI);
     bounceInput.addEventListener('input', updateSettingsUI);
+
+    themeBtnChristmas.addEventListener('click', () => {
+        currentTheme = 'christmas';
+        updateThemeButtonsUI();
+    });
+
+    themeBtnStandard.addEventListener('click', () => {
+        currentTheme = 'standard';
+        updateThemeButtonsUI();
+    });
 
     // Reset Score Logic (Now from Game Over screen)
     resetScoreBtn.addEventListener('click', () => {
@@ -167,6 +296,23 @@ function init() {
 
             // Check if one of the bodies is a box that hasn't scored yet
             // We check against 'platform' or 'box' labels
+            // Collision Sound (Platform or Box)
+            // Play sound if relative velocity is high enough? 
+            // For simplicity, just play land sound if it's the current falling box hitting something
+            // But currentBox is null'ed on drop. So we check if bodyA/B is a box.
+            // Limiting to start of collision prevents spam.
+            // We can add a cooldown or check if velocity.y was significant.
+
+            // Just play land sound for any box collision with non-sensor
+            if (!bodyA.isSensor && !bodyB.isSensor) {
+                // Simple debounce or check could go here, but for now just play
+                // Actually, duplicate events are common. Let's just play if it's a 'box' hitting something.
+                if (bodyA.label === 'box' || bodyB.label === 'box') {
+                    // Optional: check speed
+                    Sound.playLand();
+                }
+            }
+
             checkScore(bodyA, bodyB);
             checkScore(bodyB, bodyA);
         });
@@ -175,9 +321,41 @@ function init() {
     // Show initial high score
     updateHighScoreDisplay();
 
+    // Apply saved theme
+    applyTheme(currentTheme);
+
+    // Init sound context on first click
+    document.addEventListener('click', () => {
+        Sound.init();
+    }, { once: true });
+
     // Start Snow System
     snowSystem = new SnowSystem(christmasBg);
     snowSystem.start();
+
+    // Verify theme logic for snow
+    if (currentTheme !== 'christmas') {
+        snowSystem.active = false;
+        christmasBg.style.display = 'none';
+    }
+
+    // Sync Pause Sound Toggle with Settings
+    if (pauseSoundEnabledInput) {
+        pauseSoundEnabledInput.checked = soundEnabled;
+        pauseSoundEnabledInput.addEventListener('change', () => {
+            soundEnabled = pauseSoundEnabledInput.checked;
+            soundEnabledInput.checked = soundEnabled; // Sync settings one
+            localStorage.setItem('giftStackerSound', soundEnabled);
+            if (soundEnabled) Sound.init();
+        });
+
+        // Also update pause toggle if settings one changes
+        if (soundEnabledInput) {
+            soundEnabledInput.addEventListener('change', () => {
+                pauseSoundEnabledInput.checked = soundEnabledInput.checked;
+            });
+        }
+    }
 
     // Initial render loop (just for the background/UI, physics not running yet)
     // Actually, we'll start the loop but only update physics in PLAYING state
@@ -271,12 +449,22 @@ function spawnBox() {
         currentHeight = boxSize * heightFactor;
     }
 
+    // Restitution (Bounciness) Logic
+    let boxRestitution = restitutionVal;
+    if (randomSizes) {
+        // Randomize bounciness between 0 and set value
+        boxRestitution = Math.random() * restitutionVal;
+    }
+
     currentBox = Bodies.rectangle(spawnerX, 100, currentWidth, currentHeight, {
         isStatic: true,
         label: 'box',
-        restitution: restitutionVal,
+        restitution: boxRestitution,
         friction: 0.5
     });
+
+    // Play drop sound
+    Sound.playDrop();
 
     // Custom property to track if this box has contributed to score
     currentBox.hasScored = false;
@@ -390,6 +578,7 @@ function update() {
             // If any box falls below the screen
             boxes.forEach(box => {
                 if (box.position.y > window.innerHeight + 100) {
+                    // Passed logic inside gameOver to determine high score
                     gameOver();
                 }
             });
@@ -448,11 +637,15 @@ function gameOver() {
             origin: { y: 0.6 },
             colors: ['#d32f2f', '#ffd700', '#ffffff', '#388e3c']
         });
+
+        Sound.playGameOver(true);
     } else {
         // If we didn't beat the real high score, revert the optimistic display if needed
         highScore = savedTop;
         updateHighScoreDisplay();
         newRecordMsg.classList.add('hidden');
+
+        Sound.playGameOver(false);
     }
 
     gameOverScreen.classList.remove('hidden');
@@ -460,11 +653,37 @@ function gameOver() {
 
 // function togglePause() { ... } // Removed old togglePause, logic handled by menu listeners
 
+const pauseSoundEnabledInput = document.getElementById('pause-sound-enabled');
+
+// ... (existing code)
+
 function updateHighScoreDisplay() {
-    highScoreElement.innerText = `Best: ${highScore}`;
+    highScoreElement.innerText = `High: ${highScore}`;
     startHighScoreElement.innerText = `${highScore}`; // Just number
     gameOverHighScoreElement.innerText = `High Score: ${highScore}`;
 }
+
+// ... inside init ...
+
+// Sync Pause Sound Toggle with Settings
+// We need to update this whenever soundEnabled changes or modal opens
+// Actually, easier to just bind it.
+
+pauseSoundEnabledInput.checked = soundEnabled;
+pauseSoundEnabledInput.addEventListener('change', () => {
+    soundEnabled = pauseSoundEnabledInput.checked;
+    soundEnabledInput.checked = soundEnabled; // Sync settings one
+    localStorage.setItem('giftStackerSound', soundEnabled);
+    if (soundEnabled) Sound.init();
+});
+
+// Also update pause toggle if settings one changes (though that's in modal, so less likely to conflict in real-time)
+soundEnabledInput.addEventListener('change', () => {
+    // Existing listener updates storage, we just add sync
+    pauseSoundEnabledInput.checked = soundEnabledInput.checked;
+});
+
+// ... existing code ...
 
 // Settings Functions
 // Snow System
@@ -603,20 +822,48 @@ function openSettings() {
     slideSpeedInput.value = slideSpeedMult;
     dropSpeedInput.value = dropSpeedMult;
     randomSizesInput.checked = randomSizes;
+    soundEnabledInput.checked = soundEnabled;
+    // themeSelect.value = currentTheme;
+    updateThemeButtonsUI();
+
     bounceInput.value = restitutionVal;
     updateSettingsUI();
+}
+
+function updateThemeButtonsUI() {
+    // Visual toggle
+    if (currentTheme === 'christmas') {
+        themeBtnChristmas.classList.add('active');
+        themeBtnStandard.classList.remove('active');
+    } else {
+        themeBtnStandard.classList.add('active');
+        themeBtnChristmas.classList.remove('active');
+    }
 }
 
 function saveSettings() {
     slideSpeedMult = parseFloat(slideSpeedInput.value);
     dropSpeedMult = parseFloat(dropSpeedInput.value);
     randomSizes = randomSizesInput.checked;
+    soundEnabled = soundEnabledInput.checked;
+    // currentTheme = themeSelect.value; 
+    // currentTheme is updated by button clicks immediately, but we only save to LS here if desired?
+    // User expects "Save" to commit.
+    // The buttons update 'currentTheme' locally.
+
     restitutionVal = parseFloat(bounceInput.value);
 
     localStorage.setItem('giftStackerSlideSpeed', slideSpeedMult);
     localStorage.setItem('giftStackerDropSpeed', dropSpeedMult);
     localStorage.setItem('giftStackerRandomSizes', randomSizes);
+    localStorage.setItem('giftStackerSound', soundEnabled);
+    localStorage.setItem('giftStackerTheme', currentTheme);
     localStorage.setItem('giftStackerBounce', restitutionVal);
+
+    applyTheme(currentTheme);
+
+    // Initialize Audio Context on user interaction (save settings)
+    if (soundEnabled) Sound.init();
 
     settingsModal.classList.add('hidden');
     startScreen.classList.remove('hidden');
@@ -636,6 +883,7 @@ function updateSettingsUI() {
 
 // Helper to darken colors
 function adjustColor(color, amount) {
+    if (!color) return '#000000'; // Safety check
     return '#' + color.replace(/^#/, '').replace(/../g, color => ('0' + Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).substr(-2));
 }
 
@@ -655,6 +903,9 @@ function checkScore(body, otherBody) {
                 scoreElement.classList.remove('score-pop');
                 void scoreElement.offsetWidth; // trigger reflow
                 scoreElement.classList.add('score-pop');
+
+                // Sound
+                Sound.playScore();
 
                 // Optimistically update High Score Display (but don't save to LS yet)
                 if (score > highScore) {
