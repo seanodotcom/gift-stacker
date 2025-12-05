@@ -30,6 +30,16 @@ let randomSizes = localStorage.getItem('giftStackerRandomSizes') === 'true'; // 
 let soundEnabled = localStorage.getItem('giftStackerSound') !== 'false'; // Default true
 let currentTheme = localStorage.getItem('giftStackerTheme') || 'christmas';
 
+// v0.4 Difficulty & Lives
+let currentDifficulty = localStorage.getItem('giftStackerDifficulty') || 'standard';
+let lives = 3;
+let maxLives = 3;
+const DIFFICULTIES = {
+    easy: { slide: 0.5, drop: 0.8, bounce: 0, lives: 5 },
+    standard: { slide: 1.0, drop: 1.0, bounce: 0.4, lives: 3 },
+    hard: { slide: 1.5, drop: 1.4, bounce: 0.8, lives: 1 }
+};
+
 const Sound = {
     ctx: null,
     init: function () {
@@ -140,6 +150,13 @@ const soundEnabledInput = document.getElementById('sound-enabled');
 const themeBtnChristmas = document.getElementById('theme-christmas');
 const themeBtnStandard = document.getElementById('theme-standard');
 const bounceInput = document.getElementById('bounce');
+const livesContainer = document.getElementById('lives-container');
+const livesIcons = document.getElementById('lives-icons');
+const diffBtns = {
+    easy: document.getElementById('diff-easy'),
+    standard: document.getElementById('diff-standard'),
+    hard: document.getElementById('diff-hard')
+};
 const bounceVal = document.getElementById('bounce-val');
 const resetScoreBtn = document.getElementById('reset-score-btn');
 const christmasBg = document.getElementById('christmas-bg');
@@ -267,6 +284,16 @@ function init() {
         updateThemeButtonsUI();
     });
 
+    // Difficulty Listeners
+    Object.keys(diffBtns).forEach(key => {
+        diffBtns[key].addEventListener('click', () => {
+            applyDifficulty(key);
+            // Also save other settings as side effect?
+            // The standard/easy/hard buttons act as presets, so they update the sliders immediately.
+            updateSettingsUI(); // Updates the visual values of sliders text
+        });
+    });
+
     // Reset Score Logic (Now from Game Over screen)
     resetScoreBtn.addEventListener('click', () => {
         resetScoreModal.classList.remove('hidden');
@@ -323,6 +350,7 @@ function init() {
 
     // Apply saved theme
     applyTheme(currentTheme);
+    applyDifficulty(currentDifficulty);
 
     // Init sound context on first click
     document.addEventListener('click', () => {
@@ -362,11 +390,72 @@ function init() {
     requestAnimationFrame(update);
 }
 
+
+function applyDifficulty(level) {
+    currentDifficulty = level;
+    const settings = DIFFICULTIES[level];
+
+    // Apply presets
+    slideSpeedMult = settings.slide;
+    dropSpeedMult = settings.drop;
+    restitutionVal = settings.bounce;
+    maxLives = settings.lives;
+
+    // Update UI Sliders
+    if (typeof slideSpeedInput !== 'undefined') {
+        slideSpeedInput.value = slideSpeedMult;
+        dropSpeedInput.value = dropSpeedMult;
+        bounceInput.value = restitutionVal;
+    }
+
+    // Update Toggle UI
+    if (typeof diffBtns !== 'undefined') {
+        Object.keys(diffBtns).forEach(key => {
+            if (key === level) diffBtns[key].classList.add('active');
+            else diffBtns[key].classList.remove('active');
+        });
+    }
+
+    localStorage.setItem('giftStackerDifficulty', level);
+}
+
+function loseLife() {
+    lives--;
+    updateLivesUI();
+
+    if (lives > 0) {
+        Sound.playTone(150, 'sawtooth', 0.3, 0.1);
+    }
+
+    if (lives <= 0) {
+        gameOver();
+    }
+}
+
+function updateLivesUI() {
+    if (!livesIcons) return;
+    livesIcons.innerHTML = '';
+    for (let i = 0; i < maxLives; i++) {
+        const icon = document.createElement('div');
+        icon.className = 'life-icon';
+        if (i >= lives) {
+            icon.classList.add('lost');
+        }
+        livesIcons.appendChild(icon);
+    }
+}
+
 function startGame() {
     gameState = 'PLAYING';
     isPaused = false;
     score = 0;
     scoreElement.innerText = `${score}`;
+
+    // Reset Lives
+    lives = maxLives;
+    updateLivesUI();
+    if (livesContainer) livesContainer.classList.remove('hidden');
+
     boxes = [];
     sceneElement.innerHTML = ''; // Clear existing boxes
     Composite.clear(engine.world);
@@ -574,12 +663,12 @@ function update() {
 
             Engine.update(engine, Math.min(dt, 50)); // Clamp max dt to prevent explosion on lag
 
-            // Check Game Over
+            // Check Game Over (Loss of Life)
             // If any box falls below the screen
-            boxes.forEach(box => {
-                if (box.position.y > window.innerHeight + 100) {
-                    // Passed logic inside gameOver to determine high score
-                    gameOver();
+            boxes.forEach((box, index) => {
+                if (!box.lostLife && box.position.y > window.innerHeight + 100) {
+                    box.lostLife = true; // Mark as processed
+                    loseLife();
                 }
             });
         }
@@ -828,6 +917,38 @@ function openSettings() {
 
     bounceInput.value = restitutionVal;
     updateSettingsUI();
+}
+
+
+function applyTheme(theme) {
+    document.body.className = `theme-${theme}`;
+
+    if (theme === 'christmas') {
+        if (christmasBg) christmasBg.style.display = 'block';
+        if (snowSystem) {
+            snowSystem.active = true;
+            if (snowSystem.container.children.length === 0) {
+                // Restart loop if likely stopped or empty
+                snowSystem.updateLoop();
+            } else {
+                // Ensure loop is running by checking a flag or just call it?
+                // Calling it twice multiplies the speed.
+                // Better to checking if requestAnimation frame is active?
+                // SnowSystem simple version:
+                // Let's just set active=true. The loop checks active?
+                // If active was false, the loop terminated. So we MUST restart it.
+                snowSystem.updateLoop();
+            }
+        }
+    } else {
+        if (christmasBg) christmasBg.style.display = 'none';
+        if (snowSystem) snowSystem.active = false;
+    }
+
+    currentTheme = theme;
+    localStorage.setItem('giftStackerTheme', theme);
+
+    updateThemeButtonsUI();
 }
 
 function updateThemeButtonsUI() {

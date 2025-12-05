@@ -24,7 +24,11 @@
                     <span id="score" class="score-value">0</span>
                 </div>
             </div>
-            <div id="high-score">High: 0</div>
+            <div id="high-score" class="scores-sub-display">High: 0</div>
+            <div id="lives-container" class="scores-sub-display hidden">
+                <span>Lives:</span>
+                <div id="lives-icons" style="display:flex; gap:2px;"></div>
+            </div>
         </div>
 
         <button id="menu-btn" class="icon-btn">⋮</button>
@@ -34,13 +38,13 @@
             <h2>Game Paused</h2>
             <button id="resume-btn">Resume</button>
 
-            <div class="checkbox-row" style="justify-content: center; margin: 10px 0;">
+            <div class="checkbox-row inline-block" style="justify-content: center; margin: 10px 0;">
                 <input type="checkbox" id="pause-sound-enabled">
                 <label for="pause-sound-enabled">Sound Effects</label>
             </div>
 
             <button id="quit-game-btn" class="secondary-btn">Quit Game</button>
-            <button id="release-notes-btn" class="text-link">ℹ️ Gift Stacker v0.3</button>
+            <button id="release-notes-btn" class="text-link">ℹ️ Gift Stacker v0.4</button>
         </div>
 
         <!-- Restart Confirmation Modal (Now Quit Confirmation) -->
@@ -64,8 +68,18 @@
 
         <!-- Release Notes Modal -->
         <div id="release-notes-modal" class="modal hidden">
-            <h2>Release Notes v0.3</h2>
+            <h2>Release Notes v0.4</h2>
             <div class="scroll-content">
+                <h3>v0.4 - The Gameplay Update</h3>
+                <ul>
+                    <li>🎮 <strong>Lives System:</strong> You now have lives! Don't let the gifts fall. (5 for Easy, 3
+                        for Standard, 1 for Hard).</li>
+                    <li>⚙️ <strong>Difficulty Levels:</strong> Choose between Easy, Standard, and Hard difficulties in
+                        Settings.</li>
+                    <li>🎀 <strong>Visuals:</strong> New Lives UI, fancy checkboxes, and polished layouts.</li>
+                    <li>🔧 <strong>Fixes:</strong> Reduced label gaps and optimized layout nesting.</li>
+                </ul>
+                <hr>
                 <h3>v0.3 - The Polish Update</h3>
                 <ul>
                     <li>🎉 <strong>v0.3 Update:</strong> New "Standard" Blue Theme, sharper graphics, and improved
@@ -116,6 +130,14 @@
         <div id="settings-modal" class="modal hidden">
             <h2>Settings</h2>
             <div class="setting-row">
+                <label>Difficulty:</label>
+                <div class="toggle-group">
+                    <button id="diff-easy" class="toggle-btn">Easy</button>
+                    <button id="diff-standard" class="toggle-btn active">Standard</button>
+                    <button id="diff-hard" class="toggle-btn">Hard</button>
+                </div>
+            </div>
+            <div class="setting-row">
                 <label>Slide Speed: <span id="slide-speed-val">1.0x</span></label>
                 <input type="range" id="slide-speed" min="0.5" max="2.0" step="0.1" value="1.0">
             </div>
@@ -131,16 +153,16 @@
                 <input type="checkbox" id="sound-enabled" checked>
                 <label for="sound-enabled">Sound Effects</label>
             </div>
-            <div class="setting-row">
-                <label>Theme:</label>
-                <div class="theme-toggles">
-                    <button id="theme-christmas" class="theme-btn active">Christmas</button>
-                    <button id="theme-standard" class="theme-btn">Standard</button>
-                </div>
-            </div>
             <div class="setting-row checkbox-row">
                 <input type="checkbox" id="random-sizes">
                 <label for="random-sizes">Randomize Gift Box Sizes</label>
+            </div>
+            <div class="setting-row">
+                <label>Theme:</label>
+                <div class="toggle-group">
+                    <button id="theme-christmas" class="toggle-btn active">Christmas</button>
+                    <button id="theme-standard" class="toggle-btn">Standard</button>
+                </div>
             </div>
 
             <button id="close-settings-btn">Save</button>
