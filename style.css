@@ -932,3 +932,39 @@ button:active {
     .ribbon-purple::after {
         background-color: #9c27b0;
     }
+}
+
+/* FPS Counter */
+#fps-counter {
+    position: absolute;
+    top: 90px;
+    right: 20px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    font-family: monospace;
+    pointer-events: none;
+    z-index: 100;
+}
+
+/* Toast Notification */
+#toast {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    z-index: 200;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+    pointer-events: none;
+    text-align: center;
+    white-space: nowrap;
+}
+
+#toast.show {
+    opacity: 1;
+}

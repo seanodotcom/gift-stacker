@@ -44,7 +44,7 @@
             </div>
 
             <button id="quit-game-btn" class="secondary-btn">Quit Game</button>
-            <button id="release-notes-btn" class="text-link">ℹ️ Gift Stacker v0.4.2</button>
+            <button id="release-notes-btn" class="text-link">ℹ️ Gift Stacker v0.4.4</button>
         </div>
 
         <!-- Restart Confirmation Modal (Now Quit Confirmation) -->
@@ -68,8 +68,16 @@
 
         <!-- Release Notes Modal -->
         <div id="release-notes-modal" class="modal hidden">
-            <h2>Release Notes v0.4.2</h2>
+            <h2>Release Notes v0.4.4</h2>
             <div class="scroll-content">
+                <h3>v0.4.4 - The Polish Update II</h3>
+                <ul>
+                    <li>🐛 <strong>Scoring Fixes:</strong> Fixed live score bugs and splash screen glitches.</li>
+                    <li>🎰 <strong>Odometer:</strong> Score now rolls smoothly for a premium feel.</li>
+                    <li>⚡ <strong>Performance:</strong> Auto-disables snow on slower devices to keep gameplay smooth.
+                    </li>
+                </ul>
+                <hr>
                 <h3>v0.4.2 - Tuning & Polish</h3>
                 <ul>
                     <li>🎨 <strong>Visuals:</strong> Green score text and cleaner menus.</li>
@@ -132,6 +140,9 @@
                 </button>
             </div>
         </div>
+
+        <div id="fps-counter">60</div>
+        <div id="toast" class="hidden"></div>
 
         <div id="settings-modal" class="modal hidden">
             <h2>Settings</h2>

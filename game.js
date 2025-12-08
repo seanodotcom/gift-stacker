@@ -18,6 +18,7 @@ let currentBox = null;
 let platform = null;
 let gameInterval = null;
 let gameState = 'START';
+let score = 0;
 let highScore = localStorage.getItem('giftStackerHighScore') || 0;
 let isPaused = false;
 let spawnerX = 0;
@@ -37,8 +38,8 @@ let maxLives = 3;
 let platformWidthPct = 0.48;
 const DIFFICULTIES = {
     easy: { slide: 0.5, drop: 0.8, bounce: 0, lives: 5, widthPct: 0.58 },
-    standard: { slide: 1.0, drop: 1.0, bounce: 0.4, lives: 3, widthPct: 0.48 },
-    hard: { slide: 1.5, drop: 1.4, bounce: 0.8, lives: 1, widthPct: 0.42 }
+    standard: { slide: 1.0, drop: 1.0, bounce: 0.25, lives: 3, widthPct: 0.48 },
+    hard: { slide: 1.5, drop: 1.4, bounce: 0.5, lives: 1, widthPct: 0.42 }
 };
 
 const Sound = {
@@ -174,6 +175,18 @@ const startHighScoreElement = document.getElementById('start-high-score');
 const gameOverHighScoreElement = document.getElementById('game-over-high-score');
 const finalScoreElement = document.getElementById('final-score');
 const newRecordMsg = document.getElementById('new-record-msg');
+const toastElement = document.getElementById('toast');
+const fpsElement = document.getElementById('fps-counter');
+
+// Performance Vars
+let frameCount = 0;
+let lastFpsTime = 0;
+let lowFpsStreak = 0;
+let perfCheckActive = true;
+
+// Visual Score State for Odometer
+let displayScore = 0;
+let scoreUpdateTimer = 0;
 
 // Additional State
 let restitutionVal = parseFloat(localStorage.getItem('giftStackerBounce')) || 0.5;
@@ -451,6 +464,7 @@ function startGame() {
     gameState = 'PLAYING';
     isPaused = false;
     score = 0;
+    displayScore = 0;
     scoreElement.innerText = `${score}`;
 
     // Reset Lives
@@ -639,6 +653,40 @@ function update() {
         const dt = now - lastTime;
         lastTime = now;
 
+        // FPS Calculation
+        frameCount++;
+        if (now - lastFpsTime >= 1000) {
+            const fps = Math.round((frameCount * 1000) / (now - lastFpsTime));
+            if (fpsElement) fpsElement.innerText = fps;
+
+            checkPerformance(fps);
+
+            frameCount = 0;
+            lastFpsTime = now;
+        }
+
+        // SCORING ODOMETER ANIMATION
+        if (displayScore !== score) {
+            scoreUpdateTimer += dt;
+            if (scoreUpdateTimer > 30) { // Update every 30ms (approx 30fps)
+                if (displayScore < score) {
+                    displayScore++;
+                } else {
+                    displayScore--;
+                }
+                scoreElement.innerText = `${displayScore}`;
+                scoreUpdateTimer = 0;
+
+                scoreElement.innerText = `${displayScore}`;
+                scoreUpdateTimer = 0;
+
+                // Pop animation removed for smoother rolling effect
+                // scoreElement.classList.remove('score-pop');
+                // void scoreElement.offsetWidth;
+                // scoreElement.classList.add('score-pop');
+            }
+        }
+
         if (gameState === 'PLAYING' && !isPaused) {
             const width = window.innerWidth;
 
@@ -670,6 +718,15 @@ function update() {
             boxes.forEach((box, index) => {
                 if (!box.lostLife && box.position.y > window.innerHeight + 100) {
                     box.lostLife = true; // Mark as processed
+
+                    // SCORING FIX: If this box had added to the score, remove it!
+                    if (box.hasScored) {
+                        box.hasScored = false; // Fix: Mark as un-scored so it isn't recounted
+                        score--;
+                        // Visual update handled by Odometer loop
+                        // Don't update high score here, only on game over or positive change
+                    }
+
                     loseLife();
                 }
             });
@@ -1011,6 +1068,7 @@ function adjustColor(color, amount) {
 }
 
 // Helper to check and update score on collision
+// Helper to check and update score on collision
 function checkScore(body, otherBody) {
     if (body.label === 'box' && !body.hasScored && !body.isStatic) {
         // If it hits the platform or another box (that isn't itself, though collision pairs usually distinct)
@@ -1018,15 +1076,12 @@ function checkScore(body, otherBody) {
             body.hasScored = true;
             // Recalculate score based on all landed boxes
             const newScore = boxes.filter(b => b.hasScored).length;
-            if (newScore > score) {
-                score = newScore;
-                scoreElement.innerText = `${score}`;
 
-                // Add pop animation
-                scoreElement.classList.remove('score-pop');
-                void scoreElement.offsetWidth; // trigger reflow
-                scoreElement.classList.add('score-pop');
+            // Update score state
+            score = newScore;
+            // Visual update handled by Odometer loop
 
+            if (score > 0 && score > displayScore) {
                 // Sound
                 Sound.playScore();
 
@@ -1038,6 +1093,37 @@ function checkScore(body, otherBody) {
             }
         }
     }
+}
+
+function checkPerformance(fps) {
+    if (!perfCheckActive) return;
+    if (!snowSystem || !snowSystem.active) return; // Already off
+
+    if (fps < 30) {
+        lowFpsStreak++;
+    } else {
+        lowFpsStreak = 0;
+    }
+
+    if (lowFpsStreak >= 3) {
+        // 3 consecutive seconds of low FPS
+        snowSystem.stop();
+        if (christmasBg) christmasBg.style.display = 'none';
+        showToast("Low performance detected. Snow disabled.");
+        perfCheckActive = false; // Stop checking
+    }
+}
+
+function showToast(msg) {
+    if (!toastElement) return;
+    toastElement.innerText = msg;
+    toastElement.classList.remove('hidden');
+    toastElement.classList.add('show');
+
+    setTimeout(() => {
+        toastElement.classList.remove('show');
+        setTimeout(() => toastElement.classList.add('hidden'), 500);
+    }, 3000);
 }
 
 init();
