@@ -37,9 +37,9 @@ let lives = 3;
 let maxLives = 3;
 let platformWidthPct = 0.48;
 const DIFFICULTIES = {
-    easy: { slide: 0.5, drop: 0.8, bounce: 0, lives: 5, widthPct: 0.58 },
-    standard: { slide: 1.0, drop: 1.0, bounce: 0.25, lives: 3, widthPct: 0.48 },
-    hard: { slide: 1.5, drop: 1.4, bounce: 0.5, lives: 1, widthPct: 0.42 }
+    easy: { slide: 0.5, drop: 0.8, bounce: 0, lives: 5, widthPct: 0.58, dropTime: null },
+    standard: { slide: 1.0, drop: 1.0, bounce: 0.25, lives: 3, widthPct: 0.48, dropTime: 10 },
+    hard: { slide: 1.5, drop: 1.4, bounce: 0.5, lives: 1, widthPct: 0.42, dropTime: 6 }
 };
 
 const Sound = {
@@ -177,6 +177,8 @@ const finalScoreElement = document.getElementById('final-score');
 const newRecordMsg = document.getElementById('new-record-msg');
 const toastElement = document.getElementById('toast');
 const fpsElement = document.getElementById('fps-counter');
+const timerContainer = document.getElementById('timer-container');
+const timerBar = document.getElementById('timer-bar');
 
 // Performance Vars
 let frameCount = 0;
@@ -190,6 +192,8 @@ let scoreUpdateTimer = 0;
 
 // Additional State
 let restitutionVal = parseFloat(localStorage.getItem('giftStackerBounce')) || 0.5;
+let currentDropTimer = 0;
+let maxDropTime = null; // Seconds, null if disabled
 
 function applyTheme(theme) {
     document.body.className = `theme-${theme}`;
@@ -433,6 +437,22 @@ function applyDifficulty(level) {
     }
 
     localStorage.setItem('giftStackerDifficulty', level);
+
+    // Set timer
+    maxDropTime = settings.dropTime;
+    currentDropTimer = maxDropTime;
+
+    // UI
+    if (timerContainer) {
+        if (maxDropTime === null) {
+            timerContainer.classList.add('hidden');
+        } else {
+            // Only show if playing, otherwise init will handle visibility
+            // Actually let updateUIVisibility handle this primarily, 
+            // but we need to ensure the element isn't hidden if we just switched diff in settings
+            // If game logic is running, it will update frame by frame.
+        }
+    }
 }
 
 function loseLife() {
@@ -534,6 +554,8 @@ function quitGame() {
 
     // Reset background physics
     // platform, ground etc will be recreated on startGame
+
+    if (timerContainer) timerContainer.classList.add('hidden');
 }
 
 function spawnBox() {
@@ -577,6 +599,18 @@ function spawnBox() {
 
     Composite.add(engine.world, currentBox);
     createDomElement(currentBox, 'box');
+
+    // Reset Timer on Spawn
+    if (maxDropTime !== null) {
+        currentDropTimer = maxDropTime;
+        if (timerContainer) {
+            timerContainer.classList.remove('hidden');
+            timerBar.style.width = '100%';
+            timerBar.className = ''; // Reset colors
+        }
+    } else {
+        if (timerContainer) timerContainer.classList.add('hidden');
+    }
 }
 
 function handleInput(e) {
@@ -695,6 +729,34 @@ function update() {
             // BASE_SPAWNER_SPEED (6.25) was good at 60fps (16.6ms).
             // Factor = dt / 16.67
             const timeScale = dt / 16.67;
+
+            // Update Drop Timer
+            if (currentBox && currentBox.isStatic && maxDropTime !== null) {
+                currentDropTimer -= dt / 1000;
+
+                // Update UI
+                if (timerBar) {
+                    const pct = (currentDropTimer / maxDropTime) * 100;
+                    timerBar.style.width = `${pct}%`;
+
+                    // Colors
+                    if (pct < 20) {
+                        timerBar.className = 'danger';
+                    } else if (pct < 50) {
+                        timerBar.className = 'warning';
+                    } else {
+                        timerBar.className = '';
+                    }
+                }
+
+                if (currentDropTimer <= 0) {
+                    dropBox();
+                    // Force timer reset visually or hide to prevent flicker? 
+                    // dropBox will enable next after delay.
+                    // For safety, clear timer so we don't drop twice in this frame or next
+                    currentDropTimer = 0;
+                }
+            }
 
             if (currentBox && currentBox.isStatic) {
                 spawnerX += spawnerDirection * (BASE_SPAWNER_SPEED * slideSpeedMult * timeScale);
@@ -1128,3 +1190,17 @@ function showToast(msg) {
 }
 
 init();
+
+function updateUIVisibility(visible) {
+    const elements = [scoreContainer, menuBtn, fpsElement, timerContainer];
+    elements.forEach(el => {
+        if (el) {
+            if (visible) {
+                // Slight exception for timer: only show if maxDropTime is set
+                if (el === timerContainer && maxDropTime === null) return;
+                el.classList.remove('hidden');
+            }
+            else el.classList.add('hidden');
+        }
+    });
+}
