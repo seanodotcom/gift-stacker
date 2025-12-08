@@ -273,9 +273,8 @@ body.theme-christmas {
 }
 
 .score-pop {
-    animation: popOut 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: popOut 0.2s ease-out;
     color: #fff !important;
-    transform: scale(1.5);
 }
 
 @keyframes popOut {
@@ -284,7 +283,7 @@ body.theme-christmas {
     }
 
     50% {
-        transform: scale(1.8);
+        transform: scale(1.25);
     }
 
     100% {

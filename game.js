@@ -185,8 +185,8 @@ let lowFpsStreak = 0;
 let perfCheckActive = true;
 
 // Visual Score State for Odometer
-let displayScore = 0;
-let scoreUpdateTimer = 0;
+// Visual Score State for Odometer
+// Handled by ScoreAnimator
 
 // Additional State
 let restitutionVal = parseFloat(localStorage.getItem('giftStackerBounce')) || 0.5;
@@ -464,8 +464,9 @@ function startGame() {
     gameState = 'PLAYING';
     isPaused = false;
     score = 0;
-    displayScore = 0;
-    scoreElement.innerText = `${score}`;
+    score = 0;
+    ScoreAnimator.snapTo(0);
+    scoreElement.innerText = '0';
 
     // Reset Lives
     lives = maxLives;
@@ -665,30 +666,18 @@ function update() {
             lastFpsTime = now;
         }
 
-        // SCORING ODOMETER ANIMATION
-        if (displayScore !== score) {
-            scoreUpdateTimer += dt;
-            if (scoreUpdateTimer > 30) { // Update every 30ms (approx 30fps)
-                if (displayScore < score) {
-                    displayScore++;
-                } else {
-                    displayScore--;
-                }
-                scoreElement.innerText = `${displayScore}`;
-                scoreUpdateTimer = 0;
+        // SCORING ANIMATION (CountUp Safe Mode)
+        ScoreAnimator.update(dt);
 
-                scoreElement.innerText = `${displayScore}`;
-                scoreUpdateTimer = 0;
-
-                // Pop animation removed for smoother rolling effect
-                // scoreElement.classList.remove('score-pop');
-                // void scoreElement.offsetWidth;
-                // scoreElement.classList.add('score-pop');
-            }
+        // Sync DOM with Animator Display Value
+        if (scoreElement) {
+            scoreElement.innerText = Math.round(ScoreAnimator.currentDisplay);
         }
 
         if (gameState === 'PLAYING' && !isPaused) {
             const width = window.innerWidth;
+            // ... (rest of update loop)
+
 
             // Move Spawner / Current Box using Delta Time
             // BASE_SPAWNER_SPEED (6.25) was good at 60fps (16.6ms).
@@ -723,8 +712,7 @@ function update() {
                     if (box.hasScored) {
                         box.hasScored = false; // Fix: Mark as un-scored so it isn't recounted
                         score--;
-                        // Visual update handled by Odometer loop
-                        // Don't update high score here, only on game over or positive change
+                        ScoreAnimator.setTarget(score);
                     }
 
                     loseLife();
@@ -764,6 +752,8 @@ function gameOver() {
     score = validBoxes.length;
 
     // Sync the main scorebug to reflect the "stable" score
+    // Sync the main scorebug to reflect the "stable" score
+    ScoreAnimator.snapTo(score);
     scoreElement.innerText = `${score}`;
 
     finalScoreElement.innerText = score;
@@ -1010,6 +1000,48 @@ function applyTheme(theme) {
     updateThemeButtonsUI();
 }
 
+
+// Text-based Score Animator (Safe Mode)
+const ScoreAnimator = {
+    currentDisplay: 0,
+    target: 0,
+
+    setTarget: function (val) {
+        if (val !== this.target) {
+            this.target = val;
+            // Trigger Subtle Pop Animation on scoreElement
+            if (scoreElement) {
+                scoreElement.classList.remove('score-pop');
+                void scoreElement.offsetWidth; // Force Reflow
+                scoreElement.classList.add('score-pop');
+            }
+        }
+    },
+
+    snapTo: function (val) {
+        this.target = val;
+        this.currentDisplay = val;
+    },
+
+    update: function (dt) {
+        const diff = this.target - this.currentDisplay;
+        if (Math.abs(diff) < 0.05) { // Tighter snap threshold
+            this.currentDisplay = this.target;
+            return;
+        }
+
+        // Smoother Lerp (0.05 for slower, silky slide)
+        const step = diff * 0.05;
+
+        // constant min speed so it doesn't stall indefinitely
+        if (Math.abs(step) < 0.02) {
+            this.currentDisplay += (diff > 0 ? 0.02 : -0.02);
+        } else {
+            this.currentDisplay += step;
+        }
+    }
+};
+
 function updateThemeButtonsUI() {
     // Visual toggle
     if (currentTheme === 'christmas') {
@@ -1077,11 +1109,11 @@ function checkScore(body, otherBody) {
             // Recalculate score based on all landed boxes
             const newScore = boxes.filter(b => b.hasScored).length;
 
-            // Update score state
+            // Update score
             score = newScore;
-            // Visual update handled by Odometer loop
+            ScoreAnimator.setTarget(score);
 
-            if (score > 0 && score > displayScore) {
+            if (score > 0) {
                 // Sound
                 Sound.playScore();
 
