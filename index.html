@@ -38,192 +38,162 @@
             <h2>Game Paused</h2>
             <button id="resume-btn">Resume</button>
 
-            <div class="checkbox-row inline-block" style="justify-content: center; margin: 10px 0;">
-                <input type="checkbox" id="pause-sound-enabled">
-                <label for="pause-sound-enabled">Sound Effects</label>
-            </div>
-
-            <button id="quit-game-btn" class="secondary-btn">Quit Game</button>
-            <button id="release-notes-btn" class="text-link">ℹ️ Gift Stacker v0.4.5</button>
-        </div>
-
-        <!-- Restart Confirmation Modal (Now Quit Confirmation) -->
-        <div id="quit-confirm-modal" class="modal hidden">
-            <h3>Really Quit?</h3>
-            <p>Current game progress will be lost.</p>
-            <div class="modal-actions">
-                <button id="confirm-quit-btn">Yes, Quit</button>
-                <button id="cancel-quit-btn" class="secondary-btn">Cancel</button>
-            </div>
-        </div>
-
-        <!-- Reset Score Confirmation Modal -->
-        <div id="reset-score-modal" class="modal hidden">
-            <h3>Reset High Score?</h3>
-            <div class="modal-actions">
-                <button id="confirm-reset-btn" class="danger-btn">Reset</button>
-                <button id="cancel-reset-btn" class="secondary-btn">Cancel</button>
-            </div>
-        </div>
-
-        <!-- Release Notes Modal -->
-        <div id="release-notes-modal" class="modal hidden">
-            <h2>Release Notes v0.4.5</h2>
-            <div class="scroll-content">
-                <h3>v0.4.5 - The Odometer Update</h3>
-                <ul>
-                    <li>🔢 <strong>Smart Scoring:</strong> New "CountUp" animation makes every point feel rewarding.
-                    </li>
-                    <li>✨ <strong>Subtle Pulse:</strong> Score gently pulses on update for better visibility.</li>
-                    <li>🐛 <strong>Stability:</strong> Fixed crashes related to game over screens.</li>
-                </ul>
-                <hr>
-                <h3>v0.4.4 - The Polish Update II</h3>
-                <ul>
-                    <li>🐛 <strong>Scoring Fixes:</strong> Fixed live score bugs and splash screen glitches.</li>
-                    <li>🎰 <strong>Odometer:</strong> Score now rolls smoothly for a premium feel.</li>
-                    <li>⚡ <strong>Performance:</strong> Auto-disables snow on slower devices to keep gameplay smooth.
-                    </li>
-                </ul>
-                <hr>
-                <h3>v0.4.2 - Tuning & Polish</h3>
-                <ul>
-                    <li>🎨 <strong>Visuals:</strong> Green score text and cleaner menus.</li>
-                    <li>⚖️ <strong>Balance:</strong> Platform width now scales with difficulty (Easy is wider!).</li>
-                </ul>
-                <hr>
-                <h3>v0.4 - The Gameplay Update</h3>
-                <ul>
-                    <li>🎮 <strong>Lives System:</strong> You now have lives! Don't let the gifts fall. (5 for Easy, 3
-                        for Standard, 1 for Hard).</li>
-                    <li>⚙️ <strong>Difficulty Levels:</strong> Choose between Easy, Standard, and Hard difficulties in
-                        Settings.</li>
-                    <li>🎀 <strong>Visuals:</strong> New Lives UI, fancy checkboxes, and polished layouts.</li>
-                    <li>🔧 <strong>Fixes:</strong> Reduced label gaps and optimized layout nesting.</li>
-                </ul>
-                <hr>
-                <h3>v0.3 - The Polish Update</h3>
-                <ul>
-                    <li>🎉 <strong>v0.3 Update:</strong> New "Standard" Blue Theme, sharper graphics, and improved
-                        sound!</li>
-                    <li>🎹 <strong>Controls:</strong> Use Space to drop, Enter to Start, and Esc to Pause.</li>
-                    <li>🔊 <strong>Audio:</strong> New sound effects and a toggle in the Pause menu.</li>
-                    <li>🔧 <strong>Fixes:</strong> Better performance and UI polish.</li>
-                </ul>
-                <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;">
-                <h3>v0.2 - The Core Update</h3>
-                <ul>
-                    <li>🎄 <strong>Christmas Theme:</strong> Realistic snow with flutter & melting, blurred background,
-                        and festive gift colors.</li>
-                    <li>🎨 <strong>UI Polish:</strong> Redesigned scorebug, glassmorphism modals, and improved 3-dot
-                        menu.</li>
-                    <li>⚙️ <strong>New Settings:</strong> Adjust "Bounciness", randomize gift sizes, and game speed
-                        controls.</li>
-                    <li>🔧 <strong>Physics & fixes:</strong> Standardized game speed, cheat-proof high scores, and sync
-                        fixes.</li>
-                </ul>
-            </div>
-            <button id="close-notes-btn">Close</button>
-        </div>
-
-        <div id="start-screen">
-            <h1>Gift Stacker <span class="version-tag">v0.4.5</span></h1>
-            <h2>Stack the gifts as high as you can!</h2>
-            <div class="gift-score-box large">
-                <div class="lid">
-                    <span class="score-label">High Score</span>
+            <!-- Release Notes Modal -->
+            <div id="release-notes-modal" class="modal hidden">
+                <h2>Release Notes v0.4.4</h2>
+                <div class="scroll-content">
+                    <h3>v0.4.4 - The Polish Update II</h3>
+                    <ul>
+                        <li>🐛 <strong>Scoring Fixes:</strong> Fixed live score bugs and splash screen glitches.</li>
+                        <li>🎰 <strong>Odometer:</strong> Score now rolls smoothly for a premium feel.</li>
+                        <li>⚡ <strong>Performance:</strong> Auto-disables snow on slower devices to keep gameplay
+                            smooth.
+                        </li>
+                    </ul>
+                    <hr>
+                    <h3>v0.4.2 - Tuning & Polish</h3>
+                    <ul>
+                        <li>🎨 <strong>Visuals:</strong> Green score text and cleaner menus.</li>
+                        <li>⚖️ <strong>Balance:</strong> Platform width now scales with difficulty (Easy is wider!).
+                        </li>
+                    </ul>
+                    <hr>
+                    <h3>v0.4 - The Gameplay Update</h3>
+                    <ul>
+                        <li>🎮 <strong>Lives System:</strong> You now have lives! Don't let the gifts fall. (5 for Easy,
+                            3
+                            for Standard, 1 for Hard).</li>
+                        <li>⚙️ <strong>Difficulty Levels:</strong> Choose between Easy, Standard, and Hard difficulties
+                            in
+                            Settings.</li>
+                        <li>🎀 <strong>Visuals:</strong> New Lives UI, fancy checkboxes, and polished layouts.</li>
+                        <li>🔧 <strong>Fixes:</strong> Reduced label gaps and optimized layout nesting.</li>
+                    </ul>
+                    <hr>
+                    <h3>v0.3 - The Polish Update</h3>
+                    <ul>
+                        <li>🎉 <strong>v0.3 Update:</strong> New "Standard" Blue Theme, sharper graphics, and improved
+                            sound!</li>
+                        <li>🎹 <strong>Controls:</strong> Use Space to drop, Enter to Start, and Esc to Pause.</li>
+                        <li>🔊 <strong>Audio:</strong> New sound effects and a toggle in the Pause menu.</li>
+                        <li>🔧 <strong>Fixes:</strong> Better performance and UI polish.</li>
+                    </ul>
+                    <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;">
+                    <h3>v0.2 - The Core Update</h3>
+                    <ul>
+                        <li>🎄 <strong>Christmas Theme:</strong> Realistic snow with flutter & melting, blurred
+                            background,
+                            and festive gift colors.</li>
+                        <li>🎨 <strong>UI Polish:</strong> Redesigned scorebug, glassmorphism modals, and improved 3-dot
+                            menu.</li>
+                        <li>⚙️ <strong>New Settings:</strong> Adjust "Bounciness", randomize gift sizes, and game speed
+                            controls.</li>
+                        <li>🔧 <strong>Physics & fixes:</strong> Standardized game speed, cheat-proof high scores, and
+                            sync
+                            fixes.</li>
+                    </ul>
                 </div>
-                <div class="box-body">
-                    <span id="start-high-score" class="score-value">0</span>
-                </div>
+                <button id="close-notes-btn">Close</button>
             </div>
-            <div class="start-actions">
-                <button id="start-btn">Start Game</button>
-                <button id="settings-btn" class="icon-btn-settings" title="Settings">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
-                        viewBox="0 0 24 24"><!-- Icon from Material Symbols by Google - https://github.com/google/material-design-icons/blob/master/LICENSE -->
-                        <path fill="currentColor"
-                            d="M10.825 22q-.675 0-1.162-.45t-.588-1.1L8.85 18.8q-.325-.125-.612-.3t-.563-.375l-1.55.65q-.625.275-1.25.05t-.975-.8l-1.175-2.05q-.35-.575-.2-1.225t.675-1.075l1.325-1Q4.5 12.5 4.5 12.337v-.675q0-.162.025-.337l-1.325-1Q2.675 9.9 2.525 9.25t.2-1.225L3.9 5.975q.35-.575.975-.8t1.25.05l1.55.65q.275-.2.575-.375t.6-.3l.225-1.65q.1-.65.588-1.1T10.825 2h2.35q.675 0 1.163.45t.587 1.1l.225 1.65q.325.125.613.3t.562.375l1.55-.65q.625-.275 1.25-.05t.975.8l1.175 2.05q.35.575.2 1.225t-.675 1.075l-1.325 1q.025.175.025.338v.674q0 .163-.05.338l1.325 1q.525.425.675 1.075t-.2 1.225l-1.2 2.05q-.35.575-.975.8t-1.25-.05l-1.5-.65q-.275.2-.575.375t-.6.3l-.225 1.65q-.1.65-.587 1.1t-1.163.45zM11 20h1.975l.35-2.65q.775-.2 1.438-.587t1.212-.938l2.475 1.025l.975-1.7l-2.15-1.625q.125-.35.175-.737T17.5 12t-.05-.787t-.175-.738l2.15-1.625l-.975-1.7l-2.475 1.05q-.55-.575-1.212-.962t-1.438-.588L13 4h-1.975l-.35 2.65q-.775.2-1.437.588t-1.213.937L5.55 7.15l-.975 1.7l2.15 1.6q-.125.375-.175.75t-.05.8q0 .4.05.775t.175.75l-2.15 1.625l.975 1.7l2.475-1.05q.55.575 1.213.963t1.437.587zm1.05-4.5q1.45 0 2.475-1.025T15.55 12t-1.025-2.475T12.05 8.5q-1.475 0-2.487 1.025T8.55 12t1.013 2.475T12.05 15.5M12 12" />
-                    </svg>
-                </button>
-            </div>
-        </div>
 
-        <div id="fps-counter">60</div>
-        <div id="toast" class="hidden"></div>
-
-        <div id="settings-modal" class="modal hidden">
-            <h2>Settings</h2>
-            <div class="setting-row">
-                <label>Difficulty:</label>
-                <div class="toggle-group">
-                    <button id="diff-easy" class="toggle-btn">Easy</button>
-                    <button id="diff-standard" class="toggle-btn active">Standard</button>
-                    <button id="diff-hard" class="toggle-btn">Hard</button>
+            <div id="start-screen">
+                <h1>Gift Stacker</h1>
+                <h2>Stack the gifts as high as you can!</h2>
+                <div class="gift-score-box large">
+                    <div class="lid">
+                        <span class="score-label">High Score</span>
+                    </div>
+                    <div class="box-body">
+                        <span id="start-high-score" class="score-value">0</span>
+                    </div>
                 </div>
-            </div>
-            <div class="setting-row">
-                <label>Slide Speed: <span id="slide-speed-val">1.0x</span></label>
-                <input type="range" id="slide-speed" min="0.5" max="2.0" step="0.1" value="1.0">
-            </div>
-            <div class="setting-row">
-                <label>Drop Speed: <span id="drop-speed-val">1.0x</span></label>
-                <input type="range" id="drop-speed" min="0.5" max="2.0" step="0.1" value="1.0">
-            </div>
-            <div class="setting-row">
-                <label>Bounciness: <span id="bounce-val">Normal</span></label>
-                <input type="range" id="bounce" min="0" max="1.0" step="0.1" value="0.5">
-            </div>
-            <div class="setting-row checkbox-row">
-                <input type="checkbox" id="sound-enabled" checked>
-                <label for="sound-enabled">Sound Effects</label>
-            </div>
-            <div class="setting-row checkbox-row">
-                <input type="checkbox" id="random-sizes">
-                <label for="random-sizes">Randomize Gift Box Sizes</label>
-            </div>
-            <div class="setting-row">
-                <label>Theme:</label>
-                <div class="toggle-group">
-                    <button id="theme-christmas" class="toggle-btn active">Christmas</button>
-                    <button id="theme-standard" class="toggle-btn">Standard</button>
+                <div class="start-actions">
+                    <button id="start-btn">Start Game</button>
+                    <button id="settings-btn" class="icon-btn-settings" title="Settings">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
+                            viewBox="0 0 24 24"><!-- Icon from Material Symbols by Google - https://github.com/google/material-design-icons/blob/master/LICENSE -->
+                            <path fill="currentColor"
+                                d="M10.825 22q-.675 0-1.162-.45t-.588-1.1L8.85 18.8q-.325-.125-.612-.3t-.563-.375l-1.55.65q-.625.275-1.25.05t-.975-.8l-1.175-2.05q-.35-.575-.2-1.225t.675-1.075l1.325-1Q4.5 12.5 4.5 12.337v-.675q0-.162.025-.337l-1.325-1Q2.675 9.9 2.525 9.25t.2-1.225L3.9 5.975q.35-.575.975-.8t1.25.05l1.55.65q.275-.2.575-.375t.6-.3l.225-1.65q.1-.65.588-1.1T10.825 2h2.35q.675 0 1.163.45t.587 1.1l.225 1.65q.325.125.613.3t.562.375l1.55-.65q.625-.275 1.25-.05t.975.8l1.175 2.05q.35.575.2 1.225t-.675 1.075l-1.325 1q.025.175.025.338v.674q0 .163-.05.338l1.325 1q.525.425.675 1.075t-.2 1.225l-1.2 2.05q-.35.575-.975.8t-1.25-.05l-1.5-.65q-.275.2-.575.375t-.6.3l-.225 1.65q-.1.65-.587 1.1t-1.163.45zM11 20h1.975l.35-2.65q.775-.2 1.438-.587t1.212-.938l2.475 1.025l.975-1.7l-2.15-1.625q.125-.35.175-.737T17.5 12t-.05-.787t-.175-.738l2.15-1.625l-.975-1.7l-2.475 1.05q-.55-.575-1.212-.962t-1.438-.588L13 4h-1.975l-.35 2.65q-.775.2-1.437.588t-1.213.937L5.55 7.15l-.975 1.7l2.15 1.6q-.125.375-.175.75t-.05.8q0 .4.05.775t.175.75l-2.15 1.625l.975 1.7l2.475-1.05q.55.575 1.213.963t1.437.587zm1.05-4.5q1.45 0 2.475-1.025T15.55 12t-1.025-2.475T12.05 8.5q-1.475 0-2.487 1.025T8.55 12t1.013 2.475T12.05 15.5M12 12" />
+                        </svg>
+                    </button>
                 </div>
             </div>
 
-            <button id="close-settings-btn">Save</button>
-        </div>
+            <div id="fps-counter">60</div>
+            <div id="toast" class="hidden"></div>
 
-        <div id="game-over-screen" class="hidden">
-            <h1>Game Over</h1>
-            <div id="new-record-msg" class="hidden new-record">New High Score!</div>
-            <div class="gift-score-box large">
-                <div class="lid">
-                    <span class="score-label">Score</span>
+            <div id="settings-modal" class="modal hidden">
+                <h2>Settings</h2>
+                <div class="setting-row">
+                    <label>Difficulty:</label>
+                    <div class="toggle-group">
+                        <button id="diff-easy" class="toggle-btn">Easy</button>
+                        <button id="diff-standard" class="toggle-btn active">Standard</button>
+                        <button id="diff-hard" class="toggle-btn">Hard</button>
+                    </div>
                 </div>
-                <div class="box-body">
-                    <span id="final-score" class="score-value">0</span>
+                <div class="setting-row">
+                    <label>Slide Speed: <span id="slide-speed-val">1.0x</span></label>
+                    <input type="range" id="slide-speed" min="0.5" max="2.0" step="0.1" value="1.0">
                 </div>
+                <div class="setting-row">
+                    <label>Drop Speed: <span id="drop-speed-val">1.0x</span></label>
+                    <input type="range" id="drop-speed" min="0.5" max="2.0" step="0.1" value="1.0">
+                </div>
+                <div class="setting-row">
+                    <label>Bounciness: <span id="bounce-val">Normal</span></label>
+                    <input type="range" id="bounce" min="0" max="1.0" step="0.1" value="0.5">
+                </div>
+                <div class="setting-row checkbox-row">
+                    <input type="checkbox" id="sound-enabled" checked>
+                    <label for="sound-enabled">Sound Effects</label>
+                </div>
+                <div class="setting-row checkbox-row">
+                    <input type="checkbox" id="random-sizes">
+                    <label for="random-sizes">Randomize Gift Box Sizes</label>
+                </div>
+                <div class="setting-row">
+                    <label>Theme:</label>
+                    <div class="toggle-group">
+                        <button id="theme-christmas" class="toggle-btn active">Christmas</button>
+                        <button id="theme-standard" class="toggle-btn">Standard</button>
+                    </div>
+                </div>
+
+                <button id="close-settings-btn">Save</button>
             </div>
-            <div class="actions">
-                <button id="home-btn" class="icon-btn-small" title="Home">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                    </svg>
-                </button>
-                <button id="restart-btn">Play Again</button>
-            </div>
-            <div class="high-score-container">
-                <p id="game-over-high-score">High Score: 0</p>
-                <button id="reset-score-btn" class="reset-link-btn">Reset</button>
+
+            <div id="game-over-screen" class="hidden">
+                <h1>Game Over</h1>
+                <div id="new-record-msg" class="hidden new-record">New High Score!</div>
+                <div class="gift-score-box large">
+                    <div class="lid">
+                        <span class="score-label">Score</span>
+                    </div>
+                    <div class="box-body">
+                        <span id="final-score" class="score-value">0</span>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button id="home-btn" class="icon-btn-small" title="Home">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
+                    </button>
+                    <button id="restart-btn">Play Again</button>
+                </div>
+                <div class="high-score-container">
+                    <p id="game-over-high-score">High Score: 0</p>
+                    <button id="reset-score-btn" class="reset-link-btn">Reset</button>
+                </div>
             </div>
         </div>
-    </div>
-    <div id="scene">
-        <!-- Physics bodies will be mapped to DOM elements here -->
-    </div>
-    <script src="game.js"></script>
+        <div id="scene">
+            <!-- Physics bodies will be mapped to DOM elements here -->
+        </div>
+        <script src="game.js"></script>
 </body>
 
 </html>
