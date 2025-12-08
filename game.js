@@ -34,10 +34,11 @@ let currentTheme = localStorage.getItem('giftStackerTheme') || 'christmas';
 let currentDifficulty = localStorage.getItem('giftStackerDifficulty') || 'standard';
 let lives = 3;
 let maxLives = 3;
+let platformWidthPct = 0.48;
 const DIFFICULTIES = {
-    easy: { slide: 0.5, drop: 0.8, bounce: 0, lives: 5 },
-    standard: { slide: 1.0, drop: 1.0, bounce: 0.4, lives: 3 },
-    hard: { slide: 1.5, drop: 1.4, bounce: 0.8, lives: 1 }
+    easy: { slide: 0.5, drop: 0.8, bounce: 0, lives: 5, widthPct: 0.58 },
+    standard: { slide: 1.0, drop: 1.0, bounce: 0.4, lives: 3, widthPct: 0.48 },
+    hard: { slide: 1.5, drop: 1.4, bounce: 0.8, lives: 1, widthPct: 0.42 }
 };
 
 const Sound = {
@@ -400,6 +401,7 @@ function applyDifficulty(level) {
     dropSpeedMult = settings.drop;
     restitutionVal = settings.bounce;
     maxLives = settings.lives;
+    platformWidthPct = settings.widthPct;
 
     // Update UI Sliders
     if (typeof slideSpeedInput !== 'undefined') {
@@ -472,7 +474,7 @@ function startGame() {
     // Calculate dynamic sizes
     const width = window.innerWidth;
     const height = window.innerHeight;
-    platformWidth = Math.max(width * 0.5, 200); // Min width 200
+    platformWidth = Math.max(width * platformWidthPct, 200); // Dynamic based on difficulty
 
     // SCALING LOGIC
     // Use Math.min(Math.max(width * 0.15, 60), 120) to ensure boxes aren't too small on mobile or too huge on desktop.

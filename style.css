@@ -261,10 +261,10 @@ body.theme-christmas {
     z-index: 5;
     /* Strong outline for readability on any background */
     text-shadow:
-        -2px -2px 0 #000,
-        2px -2px 0 #000,
-        -2px 2px 0 #000,
-        2px 2px 0 #000,
+        -2px -2px 0 #0f380f,
+        2px -2px 0 #0f380f,
+        -2px 2px 0 #0f380f,
+        2px 2px 0 #0f380f,
         0 4px 4px rgba(0, 0, 0, 0.5);
     transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     position: relative;
@@ -465,7 +465,7 @@ button {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: transparent;
+    background: transparent !important;
     border: none;
     color: rgba(255, 255, 255, 0.8);
     pointer-events: auto;
