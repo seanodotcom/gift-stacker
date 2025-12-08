@@ -239,7 +239,8 @@ function init() {
     restartBtn.addEventListener('click', startGame);
 
     // Menu & Modals
-    menuBtn.addEventListener('click', () => {
+    menuBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent game input from firing
         if (gameState === 'PLAYING') {
             isPaused = true;
             pauseMenuModal.classList.remove('hidden');
@@ -580,7 +581,7 @@ function spawnBox() {
 
 function handleInput(e) {
     if (gameState !== 'PLAYING' || isPaused) return;
-    if (e.target.tagName === 'BUTTON') return; // Ignore button clicks
+    if (e.target.closest('button')) return; // Ignore clicks on any button or its children
 
     e.preventDefault(); // Prevent default touch actions
 
