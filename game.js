@@ -38,8 +38,8 @@ let maxLives = 3;
 let platformWidthPct = 0.48;
 const DIFFICULTIES = {
     easy: { slide: 0.5, drop: 0.8, bounce: 0, lives: 5, widthPct: 0.58, dropTime: null },
-    standard: { slide: 1.0, drop: 1.0, bounce: 0.15, lives: 3, widthPct: 0.48, dropTime: 11 },
-    hard: { slide: 1.5, drop: 1.4, bounce: 0.20, lives: 1, widthPct: 0.42, dropTime: 7 }
+    standard: { slide: 1.0, drop: 1.0, bounce: 0.05, lives: 3, widthPct: 0.48, dropTime: 11 },
+    hard: { slide: 1.5, drop: 1.4, bounce: 0.12, lives: 1, widthPct: 0.42, dropTime: 7 }
 };
 
 const Sound = {

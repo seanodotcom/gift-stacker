@@ -5,6 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Gift Stacker</title>
+    <!-- Google Fonts: Chewy (Headers) & Outfit (UI) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chewy&family=Outfit:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="logo.png" type="image/png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
@@ -56,7 +61,7 @@
             </div>
 
             <button id="quit-game-btn" class="secondary-btn">Quit Game</button>
-            <button id="release-notes-btn" class="text-link">ℹ️ Gift Stacker v0.4.13</button>
+            <button id="release-notes-btn" class="text-link">ℹ️ Gift Stacker v0.4.14</button>
         </div>
 
         <!-- Quit Confirmation Modal -->
@@ -80,8 +85,16 @@
 
         <!-- Release Notes Modal -->
         <div id="release-notes-modal" class="modal hidden">
-            <h2>Release Notes v0.4.13</h2>
+            <h2>Release Notes v0.4.14</h2>
             <div class="scroll-content">
+                <h3>v0.4.14 - Visual Polish & Font Update</h3>
+                <ul>
+                    <li>🔠 <strong>Typography:</strong> Updated fonts to 'Chewy' and 'Outfit' for a better look.</li>
+                    <li>🎨 <strong>UI Tweaks:</strong> Improved spacing, consistent font sizes, and cleaner layout.</li>
+                    <li>⚖️ <strong>Physics Tuning:</strong> Fine-tuned bounce for all difficulties.</li>
+                    <li>🧹 <strong>Cleanup:</strong> Removed debug display and improved splash screen.</li>
+                </ul>
+                <hr>
                 <h3>v0.4.13 - Visual Identity</h3>
                 <ul>
                     <li>🎨 <strong>New Logo:</strong> A brand new festive logo and app icon!</li>
@@ -201,12 +214,7 @@
                 </button>
             </div>
 
-            <div class="high-score-container">
-                <span id="start-high-score">0</span>
-                <span class="trophy-icon">🏆</span>
-            </div>
-
-            <div class="version-info">v0.4.13</div>
+            <div class="version-info">v0.4.14</div>
         </div>
 
         <div id="fps-counter">60</div>
