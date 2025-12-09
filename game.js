@@ -38,8 +38,8 @@ let maxLives = 3;
 let platformWidthPct = 0.48;
 const DIFFICULTIES = {
     easy: { slide: 0.5, drop: 0.8, bounce: 0, lives: 5, widthPct: 0.58, dropTime: null },
-    standard: { slide: 1.0, drop: 1.0, bounce: 0.25, lives: 3, widthPct: 0.48, dropTime: 10 },
-    hard: { slide: 1.5, drop: 1.4, bounce: 0.5, lives: 1, widthPct: 0.42, dropTime: 6 }
+    standard: { slide: 1.0, drop: 1.0, bounce: 0.15, lives: 3, widthPct: 0.48, dropTime: 10 },
+    hard: { slide: 1.5, drop: 1.4, bounce: 0.25, lives: 1, widthPct: 0.42, dropTime: 6 }
 };
 
 const Sound = {
@@ -208,7 +208,11 @@ function applyTheme(theme) {
 
 function init() {
     // Create engine
-    engine = Engine.create();
+    // Create engine with higher stability settings
+    engine = Engine.create({
+        positionIterations: 8,
+        velocityIterations: 6
+    });
 
     // Setup input
     document.addEventListener('mousedown', handleInput);
@@ -301,13 +305,11 @@ function init() {
     bounceInput.addEventListener('input', updateSettingsUI);
 
     themeBtnChristmas.addEventListener('click', () => {
-        currentTheme = 'christmas';
-        updateThemeButtonsUI();
+        applyTheme('christmas');
     });
 
     themeBtnStandard.addEventListener('click', () => {
-        currentTheme = 'standard';
-        updateThemeButtonsUI();
+        applyTheme('standard');
     });
 
     // Difficulty Listeners
@@ -542,6 +544,15 @@ function startGame() {
     newRecordMsg.classList.add('hidden'); // Hide new record msg on start
     updateVisualState();
 
+    // Tutorial Toast (Once per session)
+    if (!sessionStorage.getItem('giftStackerTutorialShown')) {
+        const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        const msg = isTouch ? "Tap the screen to drop a gift" : "Click the screen or press [Space] to drop a gift";
+        // Small delay to ensure UI is ready and transition is nice
+        setTimeout(() => showToast(msg), 500);
+        sessionStorage.setItem('giftStackerTutorialShown', 'true');
+    }
+
     // Set gravity again in case Engine.clear reset it
     engine.world.gravity.y = BASE_GRAVITY * dropSpeedMult;
 
@@ -630,7 +641,9 @@ function spawnBox() {
         isStatic: true,
         label: 'box',
         restitution: boxRestitution,
-        friction: 0.5
+        friction: 0.8,      // High friction to prevent sliding
+        frictionStatic: 1.0, // Sticky start
+        density: 0.005      // 5x heavier than default
     });
 
     // Play drop sound

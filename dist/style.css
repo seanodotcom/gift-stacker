@@ -356,10 +356,10 @@ body.theme-christmas {
     align-items: center;
     gap: 15px;
     background: rgba(255, 255, 255, 0.95);
-    padding: 40px;
+    padding: 20px;
     border-radius: 20px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-    min-width: 300px;
+    min-width: 225px;
 }
 
 #game-over-screen .actions {
@@ -798,11 +798,11 @@ button {
     align-items: center;
     gap: 15px;
     background: rgba(255, 255, 255, 0.95);
-    padding: 30px;
+    padding: 15px;
     border-radius: 20px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     width: 90%;
-    max-width: 400px;
+    max-width: 300px;
     /* Ensure padding on mobile */
     box-sizing: border-box;
 }
@@ -944,27 +944,38 @@ button:active {
 }
 
 /* Toast Notification */
+/* Toast Notification */
 #toast {
-    position: absolute;
-    bottom: 20px;
+    position: fixed;
+    /* Fixed so it stays on screen */
+    top: 20%;
+    /* Show near top-middle */
+    bottom: auto;
+    /* Prevent stretching */
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.85);
+    /* Slightly darker */
     color: white;
-    padding: 10px 20px;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    z-index: 200;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-size: 1rem;
+    z-index: 2000;
+    /* High z-index */
     opacity: 0;
-    transition: opacity 0.5s ease-in-out;
+    transition: opacity 0.5s ease;
     pointer-events: none;
     text-align: center;
-    white-space: nowrap;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    width: max-content;
+    max-width: 80vw;
+    height: auto;
 }
 
 #toast.show {
     opacity: 1;
 }
+
 /* Timer Bar */
 #timer-container {
     position: absolute;
@@ -985,14 +996,49 @@ button:active {
 #timer-bar {
     width: 100%;
     height: 100%;
-    background-color: #4caf50; /* Start Green */
+    background-color: #4caf50;
+    /* Start Green */
     transition: width 0.1s linear, background-color 0.3s ease;
 }
 
 #timer-bar.warning {
-    background-color: #ffc107; /* Yellow */
+    background-color: #ffc107;
+    /* Yellow */
 }
 
 #timer-bar.danger {
-    background-color: #f44336; /* Red */
+    background-color: #f44336;
+    /* Red */
+}
+
+/* UI Visibility Utility Classes */
+body.bg-blurred #scene,
+body.bg-blurred #christmas-bg {
+    filter: blur(5px);
+    transition: filter 0.3s ease;
+}
+
+body.ui-hidden #score-container,
+body.ui-hidden #timer-container,
+body.ui-hidden #menu-btn,
+body.ui-hidden #fps-counter {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+
+
+#toast.show {
+    opacity: 1;
+}
+
+/* Ensure transition back to normal is smooth too */
+#scene,
+#christmas-bg,
+#score-container,
+#timer-container,
+#menu-btn,
+#fps-counter {
+    transition: filter 0.3s ease, opacity 0.3s ease;
 }

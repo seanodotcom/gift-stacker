@@ -31,6 +31,8 @@
             </div>
         </div>
 
+        <div id="toast" class="hidden"></div>
+
         <div id="timer-container" class="hidden">
             <div id="timer-bar"></div>
         </div>
@@ -52,7 +54,7 @@
             </div>
 
             <button id="quit-game-btn" class="secondary-btn">Quit Game</button>
-            <button id="release-notes-btn" class="text-link">ℹ️ Gift Stacker v0.4.9</button>
+            <button id="release-notes-btn" class="text-link">ℹ️ Gift Stacker v0.4.10</button>
         </div>
 
         <!-- Quit Confirmation Modal -->
@@ -76,8 +78,15 @@
 
         <!-- Release Notes Modal -->
         <div id="release-notes-modal" class="modal hidden">
-            <h2>Release Notes v0.4.9</h2>
+            <h2>Release Notes v0.4.10</h2>
             <div class="scroll-content">
+                <h3>v0.4.10 - Physics & Help</h3>
+                <ul>
+                    <li>🏗️ <strong>Heavy Lifting:</strong> Boxes are 5x heavier and stickier for satisfying stacks!
+                    </li>
+                    <li>🎓 <strong>First Steps:</strong> New tutorial toast guides you on your first drop.</li>
+                </ul>
+                <hr>
                 <h3>v0.4.9 - Visual Polish Update</h3>
                 <ul>
                     <li>🕶️ <strong>Focus Mode:</strong> Hides UI on Splash & Settings for a cleaner look.</li>
@@ -204,7 +213,7 @@
             </div>
             <div class="setting-row">
                 <label>Bounciness: <span id="bounce-val">Normal</span></label>
-                <input type="range" id="bounce" min="0" max="1.0" step="0.1" value="0.5">
+                <input type="range" id="bounce" min="0" max="0.5" step="0.05" value="0.5">
             </div>
             <div class="setting-row checkbox-row">
                 <input type="checkbox" id="sound-enabled" checked>
