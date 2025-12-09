@@ -972,6 +972,22 @@ button:active {
     height: auto;
 }
 
+#debug-stats {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #0f0;
+    /* Matrix green for debug */
+    font-family: monospace;
+    font-size: 12px;
+    padding: 8px;
+    border-radius: 4px;
+    pointer-events: none;
+    z-index: 10000;
+    white-space: pre;
+}
+
 #toast.show {
     opacity: 1;
 }

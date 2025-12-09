@@ -38,8 +38,8 @@ let maxLives = 3;
 let platformWidthPct = 0.48;
 const DIFFICULTIES = {
     easy: { slide: 0.5, drop: 0.8, bounce: 0, lives: 5, widthPct: 0.58, dropTime: null },
-    standard: { slide: 1.0, drop: 1.0, bounce: 0.15, lives: 3, widthPct: 0.48, dropTime: 10 },
-    hard: { slide: 1.5, drop: 1.4, bounce: 0.25, lives: 1, widthPct: 0.42, dropTime: 6 }
+    standard: { slide: 1.0, drop: 1.0, bounce: 0.15, lives: 3, widthPct: 0.48, dropTime: 11 },
+    hard: { slide: 1.5, drop: 1.4, bounce: 0.25, lives: 1, widthPct: 0.42, dropTime: 7 }
 };
 
 const Sound = {
@@ -176,6 +176,7 @@ const gameOverHighScoreElement = document.getElementById('game-over-high-score')
 const finalScoreElement = document.getElementById('final-score');
 const newRecordMsg = document.getElementById('new-record-msg');
 const toastElement = document.getElementById('toast');
+const debugStatsElement = document.getElementById('debug-stats');
 const fpsElement = document.getElementById('fps-counter');
 const timerContainer = document.getElementById('timer-container');
 const timerBar = document.getElementById('timer-bar');
@@ -194,6 +195,7 @@ let scoreUpdateTimer = 0;
 let restitutionVal = parseFloat(localStorage.getItem('giftStackerBounce')) || 0.5;
 let currentDropTimer = 0;
 let maxDropTime = null; // Seconds, null if disabled
+let timerDelay = 0; // Delay before timer starts dropping (for visual fill)
 
 function applyTheme(theme) {
     document.body.className = `theme-${theme}`;
@@ -658,6 +660,7 @@ function spawnBox() {
     // Reset Timer on Spawn
     if (maxDropTime !== null) {
         currentDropTimer = maxDropTime;
+        timerDelay = 0.25; // 250ms delay to allow bar to visually "fill" completely
         if (timerContainer) {
             timerContainer.classList.remove('hidden');
             timerBar.style.width = '100%';
@@ -777,6 +780,8 @@ function update() {
             }
         }
 
+        updateDebugDisplay();
+
         if (gameState === 'PLAYING' && !isPaused) {
             const width = window.innerWidth;
 
@@ -787,7 +792,13 @@ function update() {
 
             // Update Drop Timer
             if (currentBox && currentBox.isStatic && maxDropTime !== null) {
-                currentDropTimer -= dt / 1000;
+                if (timerDelay > 0) {
+                    timerDelay -= dt / 1000;
+                    // Force UI to stay full during delay (fighting any interpolate issues)
+                    if (timerBar) timerBar.style.width = '100%';
+                } else {
+                    currentDropTimer -= dt / 1000;
+                }
 
                 // Update UI
                 if (timerBar) {
@@ -928,6 +939,45 @@ function updateHighScoreDisplay() {
     highScoreElement.innerText = `High: ${highScore}`;
     startHighScoreElement.innerText = `${highScore}`; // Just number
     gameOverHighScoreElement.innerText = `High Score: ${highScore}`;
+}
+
+function updateDebugDisplay() {
+    if (!debugStatsElement) return;
+
+    // Show only in game
+    if (gameState !== 'PLAYING') {
+        debugStatsElement.classList.add('hidden');
+        return;
+    }
+    debugStatsElement.classList.remove('hidden');
+
+    // Target Box: Current Spawning or Last Dropped
+    let targetBox = currentBox;
+    let state = "SPAWNING";
+
+    if (!targetBox && boxes.length > 0) {
+        targetBox = boxes[boxes.length - 1];
+        state = "DROPPED";
+    }
+
+    if (!targetBox) {
+        debugStatsElement.innerText = "No Box";
+        return;
+    }
+
+    const restitution = targetBox.restitution.toFixed(2);
+    const friction = targetBox.friction.toFixed(2);
+    const density = targetBox.density.toFixed(4);
+    const velocityY = targetBox.velocity ? targetBox.velocity.y.toFixed(2) : '0.00';
+    const isStatic = targetBox.isStatic ? "YES" : "NO";
+
+    debugStatsElement.innerText =
+        `State: ${state}
+Bounce: ${restitution}
+Friction: ${friction}
+Density: ${density}
+Vel Y: ${velocityY}
+Static: ${isStatic}`;
 }
 
 // ... inside init ...

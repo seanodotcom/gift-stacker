@@ -176,6 +176,7 @@ const gameOverHighScoreElement = document.getElementById('game-over-high-score')
 const finalScoreElement = document.getElementById('final-score');
 const newRecordMsg = document.getElementById('new-record-msg');
 const toastElement = document.getElementById('toast');
+const debugStatsElement = document.getElementById('debug-stats');
 const fpsElement = document.getElementById('fps-counter');
 const timerContainer = document.getElementById('timer-container');
 const timerBar = document.getElementById('timer-bar');
@@ -779,6 +780,8 @@ function update() {
             }
         }
 
+        updateDebugDisplay();
+
         if (gameState === 'PLAYING' && !isPaused) {
             const width = window.innerWidth;
 
@@ -936,6 +939,45 @@ function updateHighScoreDisplay() {
     highScoreElement.innerText = `High: ${highScore}`;
     startHighScoreElement.innerText = `${highScore}`; // Just number
     gameOverHighScoreElement.innerText = `High Score: ${highScore}`;
+}
+
+function updateDebugDisplay() {
+    if (!debugStatsElement) return;
+
+    // Show only in game
+    if (gameState !== 'PLAYING') {
+        debugStatsElement.classList.add('hidden');
+        return;
+    }
+    debugStatsElement.classList.remove('hidden');
+
+    // Target Box: Current Spawning or Last Dropped
+    let targetBox = currentBox;
+    let state = "SPAWNING";
+
+    if (!targetBox && boxes.length > 0) {
+        targetBox = boxes[boxes.length - 1];
+        state = "DROPPED";
+    }
+
+    if (!targetBox) {
+        debugStatsElement.innerText = "No Box";
+        return;
+    }
+
+    const restitution = targetBox.restitution.toFixed(2);
+    const friction = targetBox.friction.toFixed(2);
+    const density = targetBox.density.toFixed(4);
+    const velocityY = targetBox.velocity ? targetBox.velocity.y.toFixed(2) : '0.00';
+    const isStatic = targetBox.isStatic ? "YES" : "NO";
+
+    debugStatsElement.innerText =
+        `State: ${state}
+Bounce: ${restitution}
+Friction: ${friction}
+Density: ${density}
+Vel Y: ${velocityY}
+Static: ${isStatic}`;
 }
 
 // ... inside init ...
