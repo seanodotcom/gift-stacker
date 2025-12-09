@@ -760,27 +760,8 @@ function update() {
             lastFpsTime = now;
         }
 
-        // SCORING ODOMETER ANIMATION
-        if (displayScore !== score) {
-            scoreUpdateTimer += dt;
-            if (scoreUpdateTimer > 30) { // Update every 30ms (approx 30fps)
-                if (displayScore < score) {
-                    displayScore++;
-                } else {
-                    displayScore--;
-                }
-                scoreElement.innerText = `${displayScore}`;
-                scoreUpdateTimer = 0;
+        // SCORING ODOMETER ANIMATION REMOVED - Handled by CSS Transitions in animateScoreUI
 
-                scoreElement.innerText = `${displayScore}`;
-                scoreUpdateTimer = 0;
-
-                // Pop animation removed for smoother rolling effect
-                // scoreElement.classList.remove('score-pop');
-                // void scoreElement.offsetWidth;
-                // scoreElement.classList.add('score-pop');
-            }
-        }
 
         updateDebugDisplay();
 
@@ -853,9 +834,13 @@ function update() {
                     // SCORING FIX: If this box had added to the score, remove it!
                     if (box.hasScored) {
                         box.hasScored = false; // Fix: Mark as un-scored so it isn't recounted
+
+                        const oldScore = score;
                         score--;
-                        // Visual update handled by Odometer loop
-                        // Don't update high score here, only on game over or positive change
+                        displayScore = score; // Sync logic
+
+                        // Trigger Decrement Animation
+                        animateScoreUI(oldScore, score);
                     }
 
                     loseLife();
@@ -903,6 +888,7 @@ function gameOver() {
     // Get the previously saved high score (guaranteed stable)
     const savedTop = parseFloat(localStorage.getItem('giftStackerHighScore')) || 0;
 
+    // Use savedTop for comparison, NOT the internal 'highScore' var which might be stale or equal
     if (score > savedTop) {
         highScore = score;
         localStorage.setItem('giftStackerHighScore', highScore);
@@ -1252,21 +1238,50 @@ function checkScore(body, otherBody) {
             const newScore = boxes.filter(b => b.hasScored).length;
 
             // Update score state
-            score = newScore;
-            // Visual update handled by Odometer loop
+            if (newScore > score) {
+                // Update score state
+                const oldScore = score;
+                score = newScore;
+                displayScore = score; // Sync display score immediately logic-wise
 
-            if (score > 0 && score > displayScore) {
-                // Sound
-                Sound.playScore();
+                // Trigger Animation
+                animateScoreUI(oldScore, score);
 
-                // Optimistically update High Score Display (but don't save to LS yet)
-                if (score > highScore) {
-                    highScore = score;
-                    updateHighScoreDisplay();
+                if (score > 0) {
+                    // Sound
+                    Sound.playScore();
+
+                    // High Score is now only updated at Game Over to avoid "last block fall" bug.
                 }
             }
         }
     }
+}
+
+function animateScoreUI(oldVal, newVal) {
+    if (!scoreElement) return;
+
+    // Determine direction
+    const isUp = newVal > oldVal;
+
+    // Clear content to construct animation structure
+    scoreElement.innerHTML = '';
+
+    const oldSpan = document.createElement('span');
+    oldSpan.textContent = oldVal;
+    oldSpan.className = isUp ? 'score-digit slide-out' : 'score-digit slide-out-down';
+
+    const newSpan = document.createElement('span');
+    newSpan.textContent = newVal;
+    newSpan.className = isUp ? 'score-digit slide-in' : 'score-digit slide-in-down';
+
+    scoreElement.appendChild(oldSpan);
+    scoreElement.appendChild(newSpan);
+
+    // Cleanup after animation completes
+    setTimeout(() => {
+        if (scoreElement) scoreElement.innerText = newVal;
+    }, 500);
 }
 
 function checkPerformance(fps) {
