@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Gift Stacker</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="logo.png" type="image/png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
@@ -55,7 +56,7 @@
             </div>
 
             <button id="quit-game-btn" class="secondary-btn">Quit Game</button>
-            <button id="release-notes-btn" class="text-link">ℹ️ Gift Stacker v0.4.12</button>
+            <button id="release-notes-btn" class="text-link">ℹ️ Gift Stacker v0.4.13</button>
         </div>
 
         <!-- Quit Confirmation Modal -->
@@ -179,16 +180,10 @@
         </div>
 
         <div id="start-screen">
+            <img src="logo.png" id="game-logo" alt="Gift Stacker Logo">
             <h1>Gift Stacker</h1>
             <h2>Stack the gifts as high as you can!</h2>
-            <div class="gift-score-box large">
-                <div class="lid">
-                    <span class="score-label">High Score</span>
-                </div>
-                <div class="box-body">
-                    <span id="start-high-score" class="score-value">0</span>
-                </div>
-            </div>
+            <!-- High Score Removed -->
             <div class="start-actions">
                 <button id="start-btn">Start Game</button>
                 <button id="settings-btn" class="icon-btn-settings" title="Settings">

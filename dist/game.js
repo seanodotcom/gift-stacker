@@ -39,7 +39,7 @@ let platformWidthPct = 0.48;
 const DIFFICULTIES = {
     easy: { slide: 0.5, drop: 0.8, bounce: 0, lives: 5, widthPct: 0.58, dropTime: null },
     standard: { slide: 1.0, drop: 1.0, bounce: 0.15, lives: 3, widthPct: 0.48, dropTime: 11 },
-    hard: { slide: 1.5, drop: 1.4, bounce: 0.25, lives: 1, widthPct: 0.42, dropTime: 7 }
+    hard: { slide: 1.5, drop: 1.4, bounce: 0.20, lives: 1, widthPct: 0.42, dropTime: 7 }
 };
 
 const Sound = {
@@ -571,7 +571,9 @@ function startGame() {
     // Create Platform
     platform = Bodies.rectangle(width / 2, height - 50, platformWidth, PLATFORM_HEIGHT, {
         isStatic: true,
-        label: 'platform'
+        label: 'platform',
+        restitution: 0,     // Zero bounce surface
+        friction: 1.0       // Maximum grip
     });
     Composite.add(engine.world, platform);
     createDomElement(platform, 'platform');
@@ -936,9 +938,10 @@ const pauseSoundEnabledInput = document.getElementById('pause-sound-enabled');
 // ... (existing code)
 
 function updateHighScoreDisplay() {
-    highScoreElement.innerText = `High: ${highScore}`;
-    startHighScoreElement.innerText = `${highScore}`; // Just number
-    gameOverHighScoreElement.innerText = `High Score: ${highScore}`;
+    if (highScoreElement) highScoreElement.innerText = `High: ${highScore}`;
+    if (startHighScoreElement) startHighScoreElement.innerText = `${highScore}`;
+    if (gameOverHighScoreElement) gameOverHighScoreElement.innerText = `High Score: ${highScore}`;
+    localStorage.setItem('giftStackerHighScore', highScore);
 }
 
 function updateDebugDisplay() {
