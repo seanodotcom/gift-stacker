@@ -38,8 +38,8 @@ let maxLives = 3;
 let platformWidthPct = 0.48;
 const DIFFICULTIES = {
     easy: { slide: 0.5, drop: 0.8, bounce: 0, lives: 5, widthPct: 0.58, dropTime: null },
-    standard: { slide: 1.0, drop: 1.0, bounce: 0.15, lives: 3, widthPct: 0.48, dropTime: 10 },
-    hard: { slide: 1.5, drop: 1.4, bounce: 0.25, lives: 1, widthPct: 0.42, dropTime: 6 }
+    standard: { slide: 1.0, drop: 1.0, bounce: 0.15, lives: 3, widthPct: 0.48, dropTime: 11 },
+    hard: { slide: 1.5, drop: 1.4, bounce: 0.25, lives: 1, widthPct: 0.42, dropTime: 7 }
 };
 
 const Sound = {
@@ -194,6 +194,7 @@ let scoreUpdateTimer = 0;
 let restitutionVal = parseFloat(localStorage.getItem('giftStackerBounce')) || 0.5;
 let currentDropTimer = 0;
 let maxDropTime = null; // Seconds, null if disabled
+let timerDelay = 0; // Delay before timer starts dropping (for visual fill)
 
 function applyTheme(theme) {
     document.body.className = `theme-${theme}`;
@@ -658,6 +659,7 @@ function spawnBox() {
     // Reset Timer on Spawn
     if (maxDropTime !== null) {
         currentDropTimer = maxDropTime;
+        timerDelay = 0.25; // 250ms delay to allow bar to visually "fill" completely
         if (timerContainer) {
             timerContainer.classList.remove('hidden');
             timerBar.style.width = '100%';
@@ -787,7 +789,13 @@ function update() {
 
             // Update Drop Timer
             if (currentBox && currentBox.isStatic && maxDropTime !== null) {
-                currentDropTimer -= dt / 1000;
+                if (timerDelay > 0) {
+                    timerDelay -= dt / 1000;
+                    // Force UI to stay full during delay (fighting any interpolate issues)
+                    if (timerBar) timerBar.style.width = '100%';
+                } else {
+                    currentDropTimer -= dt / 1000;
+                }
 
                 // Update UI
                 if (timerBar) {
