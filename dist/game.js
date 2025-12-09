@@ -233,7 +233,6 @@ function init() {
                 } else {
                     pauseMenuModal.classList.add('hidden');
                 }
-                updateVisualState();
             } else if (gameState === 'GAMEOVER') {
                 quitGame();
             }
@@ -249,20 +248,17 @@ function init() {
         if (gameState === 'PLAYING') {
             isPaused = true;
             pauseMenuModal.classList.remove('hidden');
-            updateVisualState();
         }
     });
 
     resumeBtn.addEventListener('click', () => {
         isPaused = false;
         pauseMenuModal.classList.add('hidden');
-        updateVisualState();
     });
 
     quitGameBtn.addEventListener('click', () => {
         pauseMenuModal.classList.add('hidden');
         quitConfirmModal.classList.remove('hidden');
-        updateVisualState();
     });
 
     confirmQuitBtn.addEventListener('click', () => {
@@ -273,7 +269,6 @@ function init() {
     cancelQuitBtn.addEventListener('click', () => {
         quitConfirmModal.classList.add('hidden');
         pauseMenuModal.classList.remove('hidden');
-        updateVisualState();
     });
 
     homeBtn.addEventListener('click', quitGame);
@@ -281,7 +276,6 @@ function init() {
     releaseNotesBtn.addEventListener('click', () => {
         pauseMenuModal.classList.add('hidden');
         releaseNotesModal.classList.remove('hidden');
-        updateVisualState();
     });
 
     closeNotesBtn.addEventListener('click', () => {
@@ -290,7 +284,6 @@ function init() {
         if (gameState === 'PLAYING') {
             pauseMenuModal.classList.remove('hidden');
         }
-        updateVisualState();
     });
 
     // Settings Listeners
@@ -323,7 +316,6 @@ function init() {
     // Reset Score Logic (Now from Game Over screen)
     resetScoreBtn.addEventListener('click', () => {
         resetScoreModal.classList.remove('hidden');
-        updateVisualState();
     });
 
     confirmResetBtn.addEventListener('click', () => {
@@ -331,12 +323,10 @@ function init() {
         localStorage.setItem('giftStackerHighScore', 0);
         updateHighScoreDisplay();
         resetScoreModal.classList.add('hidden');
-        updateVisualState();
     });
 
     cancelResetBtn.addEventListener('click', () => {
         resetScoreModal.classList.add('hidden');
-        updateVisualState();
     });
 
     // Set gravity
@@ -416,7 +406,6 @@ function init() {
 
     // Initial render loop (just for the background/UI, physics not running yet)
     // Actually, we'll start the loop but only update physics in PLAYING state
-    updateVisualState();
     requestAnimationFrame(update);
 }
 
@@ -492,34 +481,6 @@ function updateLivesUI() {
     }
 }
 
-function updateVisualState() {
-    // check visual state logic
-    const isPausedModal = !pauseMenuModal.classList.contains('hidden');
-    const isGameOver = !gameOverScreen.classList.contains('hidden');
-    const isQuitConfirm = !quitConfirmModal.classList.contains('hidden');
-    const isResetConfirm = !resetScoreModal.classList.contains('hidden');
-    const isReleaseNotes = !releaseNotesModal.classList.contains('hidden');
-
-    // Blur Background: Paused, Game Over, or Sub-Modals
-    const shouldBlur = isPausedModal || isGameOver || isQuitConfirm || isResetConfirm || isReleaseNotes;
-    if (shouldBlur) {
-        document.body.classList.add('bg-blurred');
-    } else {
-        document.body.classList.remove('bg-blurred');
-    }
-
-    // Hide UI: Start Screen (Splash) or Settings
-    const isStartScreen = !startScreen.classList.contains('hidden');
-    const isSettings = !settingsModal.classList.contains('hidden');
-
-    const shouldHideUI = isStartScreen || isSettings;
-    if (shouldHideUI) {
-        document.body.classList.add('ui-hidden');
-    } else {
-        document.body.classList.remove('ui-hidden');
-    }
-}
-
 function startGame() {
     gameState = 'PLAYING';
     isPaused = false;
@@ -540,7 +501,6 @@ function startGame() {
     startScreen.classList.add('hidden');
     gameOverScreen.classList.add('hidden');
     newRecordMsg.classList.add('hidden'); // Hide new record msg on start
-    updateVisualState();
 
     // Set gravity again in case Engine.clear reset it
     engine.world.gravity.y = BASE_GRAVITY * dropSpeedMult;
@@ -591,8 +551,6 @@ function quitGame() {
     startScreen.classList.remove('hidden');
     gameOverScreen.classList.add('hidden');
     pauseMenuModal.classList.add('hidden');
-
-    updateVisualState();
 
     // Reset background physics
     // platform, ground etc will be recreated on startGame
@@ -902,7 +860,6 @@ function gameOver() {
     }
 
     gameOverScreen.classList.remove('hidden');
-    updateVisualState();
 }
 
 // function togglePause() { ... } // Removed old togglePause, logic handled by menu listeners
@@ -1073,7 +1030,6 @@ let snowSystem;
 function openSettings() {
     settingsModal.classList.remove('hidden');
     startScreen.classList.add('hidden');
-    updateVisualState();
     slideSpeedInput.value = slideSpeedMult;
     dropSpeedInput.value = dropSpeedMult;
     randomSizesInput.checked = randomSizes;
@@ -1154,7 +1110,6 @@ function saveSettings() {
 
     settingsModal.classList.add('hidden');
     startScreen.classList.remove('hidden');
-    updateVisualState();
 }
 
 function updateSettingsUI() {
