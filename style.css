@@ -1352,8 +1352,10 @@ h3 {
     /* overflow: hidden;  <-- Removed to prevent cutting off if content grows */
     min-height: 220px;
     /* Ensure enough height for icon + text + price + button */
-    justify-content: space-between;
-    /* Space out content vertically */
+    justify-content: flex-start;
+    /* Group items at top */
+    gap: 10px;
+    /* Small consistent gap between Icon and Info */
 }
 
 .shop-card:hover {
@@ -1418,6 +1420,14 @@ h3 {
     color: #333;
 }
 
+.shop-info {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    /* Take up remaining space */
+}
+
 .shop-info p {
     margin: 5px 0 10px 0;
     font-size: 0.8rem;
@@ -1429,6 +1439,9 @@ h3 {
     padding: 8px;
     font-size: 0.9rem;
     border-radius: 5px;
+    margin-top: auto;
+    /* Push to bottom of flex container */
+    margin-bottom: 0;
 }
 
 .shop-btn.buy-btn {

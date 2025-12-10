@@ -10,6 +10,35 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Chewy&family=Outfit:wght@300;400;500;700&display=swap"
         rel="stylesheet">
+    <script>
+        // NUCLEAR OPTION: Global Enter Key Kill Switch
+        // Run immediately before body loads
+        window.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.code === 'Enter' || e.keyCode === 13) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                console.log("Enter key blocked by Nuclear Option");
+                return false;
+            }
+        }, true);
+        window.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter' || e.code === 'Enter' || e.keyCode === 13) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                return false;
+            }
+        }, true);
+        window.addEventListener('keyup', function (e) {
+            if (e.key === 'Enter' || e.code === 'Enter' || e.keyCode === 13) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                return false;
+            }
+        }, true);
+    </script>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="logo.png" type="image/png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
@@ -61,7 +90,7 @@
             </div>
 
             <button id="quit-game-btn" class="secondary-btn">Quit Game</button>
-            <button id="release-notes-btn" class="text-link">ℹ️ Gift Stacker v0.5.0</button>
+            <button id="release-notes-btn" class="text-link">ℹ️ Gift Stacker v0.6.5</button>
         </div>
 
         <!-- Quit Confirmation Modal -->
@@ -85,9 +114,30 @@
 
         <!-- Release Notes Modal -->
         <div id="release-notes-modal" class="modal hidden">
-            <h2>Release Notes v0.5.0</h2>
+            <h2>Release Notes v0.6.5</h2>
             <div class="scroll-content">
-                <h3>v0.5.0 - The "Polish" Update 🎁</h3>
+                <h3>v0.6.5 - The "Zombie Slayer" Update 🧟‍♂️</h3>
+                <ul>
+                    <li>🛑 <strong>Critical Fix:</strong> Eliminated the "Zombie Game" bug that caused games to
+                        auto-restart.</li>
+                    <li>🎨 <strong>Polish:</strong> Improved Gift Shop card spacing and layout.</li>
+                    <li>🍪 <strong>Visuals:</strong> Added cookie rewards to Game Over screen.</li>
+                </ul>
+                <hr>
+                <h3>v0.6 - The Gratification Update 🎁</h3>
+                <ul>
+                    <li>🎁 <strong>Gift Shop:</strong> Spend your hard-earned cookies on new themes!</li>
+                    <li>🏆 <strong>Leaderboard:</strong> Compete globally with the new Top 10 High Score board.</li>
+                </ul>
+                <hr>
+                <h3>v0.5.5 - The Polish Update</h3>
+                <ul>
+                    <li>🐛 <strong>Fixes:</strong> Resolved Splash Screen bugs and aligned Home button.</li>
+                    <li>👆 <strong>Controls:</strong> Improved pause responsiveness.</li>
+                    <li>📐 <strong>Visuals:</strong> Fixed alignment of the Home button icon.</li>
+                </ul>
+                <hr>
+                <h3>v0.5.0 - The "Polish" Update</h3>
                 <ul>
                     <li>🚀 <strong>Major Milestone:</strong> Complete visual and physics overhaul.</li>
                     <li>🎨 <strong>Visuals:</strong> New 'Chewy' & 'Outfit' typography, refined layout, and animations.
@@ -96,114 +146,15 @@
                     <li>⚖️ <strong>Physics 2.0:</strong> "Anti-Rubber" tuning for precise stacking.</li>
                 </ul>
                 <hr>
-                <h3>v0.4.14 - Visual Polish & Font Update</h3>
+                <h3>v0.4.x - Early Access</h3>
                 <ul>
-                    <li>🔠 <strong>Typography:</strong> Updated fonts to 'Chewy' and 'Outfit' for a better look.</li>
-                    <li>🎨 <strong>UI Tweaks:</strong> Improved spacing, consistent font sizes, and cleaner layout.</li>
-                </ul>
-                <hr>
-                <h3>v0.4.13 - Visual Identity</h3>
-                <ul>
-                    <li>🎨 <strong>New Logo:</strong> A brand new festive logo and app icon!</li>
-                    <li>✨ <strong>Polish:</strong> Smoother animations and cleaner UI alignment.</li>
-                </ul>
-                <hr>
-                <h3>v0.4.12 - Debugging Tools</h3>
-                <ul>
-                    <li>🐞 <strong>Debug Display:</strong> Added bottom-left stats to help tune physics.</li>
-                </ul>
-                <hr>
-                <h3>v0.4.11 - Visual Tuning</h3>
-                <ul>
-                    <li>⏱️ <strong>Timer Tweak:</strong> Added +1s to Standard/Hard timers & fixed visual glitches.</li>
-                </ul>
-                <hr>
-                <h3>v0.4.10 - Physics & Help</h3>
-                <ul>
-                    <li>🏗️ <strong>Heavy Lifting:</strong> Boxes are 5x heavier and stickier for satisfying stacks!
-                    </li>
-                    <li>🎓 <strong>First Steps:</strong> New tutorial toast guides you on your first drop.</li>
-                </ul>
-                <hr>
-                <h3>v0.4.9 - Visual Polish Update</h3>
-                <ul>
-                    <li>🕶️ <strong>Focus Mode:</strong> Hides UI on Splash & Settings for a cleaner look.</li>
-                    <li>🌫️ <strong>Background Blur:</strong> Blurs the game when Paused or Game Over.</li>
-                </ul>
-                <hr>
-                <h3>v0.4.8 - The Pressure Update</h3>
-                <ul>
-                    <li>⏳ <strong>Drop Timer:</strong> Added urgency! 10s for Standard, 6s for Hard.</li>
-                    <li>🚦 <strong>Visual Bar:</strong> Watch the timer bar change from Green to Red!</li>
-                </ul>
-                <hr>
-                <h3>v0.4.7 - UI Size Update</h3>
-                <ul>
-                    <li>🔢 <strong>Big Scores:</strong> Increased score number sizes by 40% for better visibility!</li>
-                    <li>🛡️ <strong>Safety Release:</strong> Checkpoint commit to ensure stability.</li>
-                </ul>
-                <hr>
-                <h3>v0.4.6 - Stability Release</h3>
-                <ul>
-                    <li>🚑 <strong>Critical Fixes:</strong> Restored missing menus (Pause, Quit, Reset) that were
-                        accidentally lost.</li>
-                    <li>👆 <strong>Controls:</strong> Fixed issue where tapping Pause button dropped a gift.</li>
-                    <li>📐 <strong>Visuals:</strong> Fixed aligned of the Home button icon.</li>
-                </ul>
-                <hr>
-                <h3>v0.4.4 - The Polish Update II</h3>
-                <ul>
-                    <li>🐛 <strong>Scoring Fixes:</strong> Fixed live score bugs and splash screen glitches.</li>
-                    <li>🎰 <strong>Odometer:</strong> Score now rolls smoothly for a premium feel.</li>
-                    <li>⚡ <strong>Performance:</strong> Auto-disables snow on slower devices to keep gameplay
-                        smooth.
-                    </li>
-                </ul>
-                <hr>
-                <h3>v0.4.2 - Tuning & Polish</h3>
-                <ul>
-                    <li>🎨 <strong>Visuals:</strong> Green score text and cleaner menus.</li>
-                    <li>⚖️ <strong>Balance:</strong> Platform width now scales with difficulty (Easy is wider!).
-                    </li>
-                </ul>
-                <hr>
-                <h3>v0.4 - The Gameplay Update</h3>
-                <ul>
-                    <li>🎮 <strong>Lives System:</strong> You now have lives! Don't let the gifts fall. (5 for Easy,
-                        3
-                        for Standard, 1 for Hard).</li>
-                    <li>⚙️ <strong>Difficulty Levels:</strong> Choose between Easy, Standard, and Hard difficulties
-                        in
-                        Settings.</li>
-                    <li>🎀 <strong>Visuals:</strong> New Lives UI, fancy checkboxes, and polished layouts.</li>
-                    <li>🔧 <strong>Fixes:</strong> Reduced label gaps and optimized layout nesting.</li>
-                </ul>
-                <hr>
-                <h3>v0.3 - The Polish Update</h3>
-                <ul>
-                    <li>🎉 <strong>v0.3 Update:</strong> New "Standard" Blue Theme, sharper graphics, and improved
-                        sound!</li>
-                    <li>🎹 <strong>Controls:</strong> Use Space to drop, Enter to Start, and Esc to Pause.</li>
-                    <li>🔊 <strong>Audio:</strong> New sound effects and a toggle in the Pause menu.</li>
-                    <li>🔧 <strong>Fixes:</strong> Better performance and UI polish.</li>
-                </ul>
-                <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ddd;">
-                <h3>v0.2 - The Core Update</h3>
-                <ul>
-                    <li>🎄 <strong>Christmas Theme:</strong> Realistic snow with flutter & melting, blurred
-                        background,
-                        and festive gift colors.</li>
-                    <li>🎨 <strong>UI Polish:</strong> Redesigned scorebug, glassmorphism modals, and improved 3-dot
-                        menu.</li>
-                    <li>⚙️ <strong>New Settings:</strong> Adjust "Bounciness", randomize gift sizes, and game speed
-                        controls.</li>
-                    <li>🔧 <strong>Physics & fixes:</strong> Standardized game speed, cheat-proof high scores, and
-                        sync
-                        fixes.</li>
+                    <li>🏗️ <strong>Physics:</strong> "Anti-Rubber" tuning for precise stacking.</li>
+                    <li>🎨 <strong>Visuals:</strong> Dark Mode, Snow effects, and more.</li>
                 </ul>
             </div>
             <button id="close-notes-btn">Close</button>
         </div>
+
 
         <div id="start-screen">
             <img src="logo.png" id="game-logo" alt="Gift Stacker Logo">
@@ -229,7 +180,7 @@
                 </div>
             </div>
 
-            <div class="version-info">v0.6 | Gift Stacker</div>
+            <div class="version-info">v0.6.5</div>
         </div>
 
         <!-- Shop Modal -->
@@ -298,6 +249,9 @@
                 <div class="box-body">
                     <span id="final-score" class="score-value">0</span>
                 </div>
+            </div>
+            <div id="game-over-cookie-msg"
+                style="margin-top: -15px; margin-bottom: 20px; font-weight: 900; font-size: 1.3rem; color: #4caf50;">
             </div>
             <div class="actions">
                 <button id="home-btn" class="icon-btn-small" title="Home">

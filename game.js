@@ -322,6 +322,16 @@ function init() {
         velocityIterations: 6
     });
 
+
+    // GLOBAL ENTER KEY KILL SWITCH
+    window.addEventListener('keydown', (e) => {
+        if (e.code === 'Enter' || e.key === 'Enter' || e.keyCode === 13) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+    }, true); // Use Capture phase to intercept before anything else
+
     // Setup input
     document.addEventListener('mousedown', handleInput);
     document.addEventListener('touchstart', handleInput, { passive: false });
@@ -333,10 +343,7 @@ function init() {
             if (gameState === 'PLAYING' && !isPaused) {
                 dropBox();
             }
-        } else if (e.code === 'Enter') {
-            if (gameState === 'START' || gameState === 'GAMEOVER') {
-                startGame();
-            }
+
         } else if (e.code === 'Escape') {
             if (gameState === 'PLAYING') {
                 isPaused = !isPaused;
@@ -368,18 +375,13 @@ function init() {
         }
     });
 
-    // Enter key support for submission
-    playerNameInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            submitScoreBtn.click();
-        }
-    });
+
 
     skipSubmitBtn.addEventListener('click', () => {
         submitScoreModal.classList.add('hidden');
-        gameOverScreen.classList.remove('hidden'); // Go back to Game Over or just close?
-        // Usually "Submit Score" is an overlay on Game Over or replaces it. 
-        // Let's say it was an overlay, so closing it reveals game over.
+        gameOverScreen.classList.remove('hidden'); // Go back to Game Over
+        gameOverScreen.style.display = ''; // Restore default display
+        if (restartBtn) restartBtn.disabled = false; // Re-enable button
         updateVisualState();
     });
 
@@ -712,6 +714,14 @@ function updateVisualState() {
 }
 
 function startGame() {
+    // CRITICAL FIX: Prevent Zombie Games
+    // If ANY modal is open, do not start the game.
+    if (!submitScoreModal.classList.contains('hidden')) return;
+    if (!leaderboardModal.classList.contains('hidden')) return;
+    if (!shopModal.classList.contains('hidden')) return;
+    if (!settingsModal.classList.contains('hidden')) return;
+    if (!releaseNotesModal.classList.contains('hidden')) return;
+
     gameState = 'PLAYING';
     isPaused = false;
     score = 0;
@@ -1059,7 +1069,16 @@ function update() {
 }
 
 function gameOver() {
+    if (gameState === 'GAMEOVER') return; // Prevent multiple calls/re-entry
     gameState = 'GAMEOVER';
+
+    // NUCLEAR FOCUS FIX: Blur any active element (like Start/Restart buttons)
+    if (document.activeElement) {
+        document.activeElement.blur();
+    }
+
+    // Disable Restart Button temporarily to prevent accidental key-press triggers
+    if (restartBtn) restartBtn.disabled = true;
 
     // Recalculate score to exclude any boxes that fell off screen
     // Score = number of boxes that have scored AND are still visible (y < window height)
@@ -1114,17 +1133,23 @@ function gameOver() {
     }
 
     // Logic for Submit Score:
-    if (score > 0) {
+    // Logic for High Scores vs Game Over
+    const cookieMsg = document.getElementById('game-over-cookie-msg');
+
+    // Default: Clear cookie message
+    if (cookieMsg) cookieMsg.innerText = '';
+
+    // Only show the "Submit Score" modal if it is a GLOBAL HIGH SCORE
+    if (score > 0 && isGlobalHighScore) {
         // Pre-fill name
         const savedName = localStorage.getItem('giftStackerPlayerName') || "";
         playerNameInput.value = savedName;
 
-        // Show score and earned cookies
+        // Populate Modal Info
         scoreSubmitVal.innerText = score;
         const submitMsg = document.getElementById('submit-score-msg');
         if (submitMsg) {
-            const currencyName = score === 1 ? 'Cookie' : 'Cookies'; // Singular/Plural
-            // Tighter spacing (margin-top negative or small line-height) and smaller text (0.9em instead of 1.3em)
+            const currencyName = score === 1 ? 'Cookie' : 'Cookies';
             submitMsg.innerHTML = `
                 Your Score: <span id="submit-score-val" style="font-weight:900;">${score}</span>
                 <div style="margin-top:2px; font-size: 0.7em; color:#4caf50; font-weight:bold;">
@@ -1132,40 +1157,45 @@ function gameOver() {
                 </div>`;
         }
 
-        // Dynamic Header: Only show "New High Score" if we beat the leaderboard bottom
-        // OR if we beat local high score? User said "below lowest (of 10)". So comparing to global.
-        // Dynamic Header & Controls
+        // Configure Modal for High Score
         const modalHeader = submitScoreModal.querySelector('h2');
-        const modalControls = submitScoreModal.querySelector('.modal-buttons');
+        if (modalHeader) modalHeader.innerText = "🏆 New High Score!";
 
-        // Check global high score qualification (already calculated as isGlobalHighScore)
-        console.log(`Checking High Score: Score ${score} vs MinToBeat ${minToBeat} (Qualifying: ${isGlobalHighScore})`);
+        playerNameInput.classList.remove('hidden');
+        setTimeout(() => playerNameInput.focus(), 100);
+        if (submitScoreBtn) submitScoreBtn.classList.remove('hidden');
+        if (skipSubmitBtn) skipSubmitBtn.innerText = 'Skip';
 
-        if (modalHeader) {
-            if (isGlobalHighScore) {
-                modalHeader.innerText = "🏆 New High Score!";
-                playerNameInput.classList.remove('hidden'); // Use class
-                if (submitScoreBtn) submitScoreBtn.classList.remove('hidden');
-                if (skipSubmitBtn) skipSubmitBtn.innerText = 'Skip';
-            } else {
-                modalHeader.innerText = "Round Complete";
-                playerNameInput.classList.add('hidden'); // Use class to override CSS !important
-                if (submitScoreBtn) submitScoreBtn.classList.add('hidden');
-                if (skipSubmitBtn) skipSubmitBtn.innerText = 'Continue';
-            }
+        // Show Modal, Hide Game Over
+        submitScoreModal.classList.remove('hidden');
+        gameOverScreen.classList.add('hidden');
+        gameOverScreen.style.display = 'none';
+        if (restartBtn) restartBtn.disabled = true;
+
+    } else {
+        // NOT a high score (or 0 score). Show standard Game Over screen.
+        // Update Cookie Message on Game Over screen
+        if (score > 0 && cookieMsg) {
+            const currencyName = score === 1 ? 'Cookie' : 'Cookies';
+            cookieMsg.innerText = `+${score} ${currencyName} earned 🍪`;
         }
 
-        submitScoreModal.classList.remove('hidden');
-        // We show Game Over screen BEHIND it.
+        // Ensure Modal is hidden
+        submitScoreModal.classList.add('hidden');
+
+        // Show Game Over Screen
         gameOverScreen.classList.remove('hidden');
-    } else {
-        gameOverScreen.classList.remove('hidden');
+        gameOverScreen.style.display = ''; // Restore
+        if (restartBtn) restartBtn.disabled = false;
+
+        // Safety blur
+        if (document.activeElement) document.activeElement.blur();
     }
 
-    // gameOverScreen.classList.remove('hidden'); // Already handled above
-    if (startScreen) startScreen.classList.add('hidden'); // Defensive: ensure splash is gone
+    if (startScreen) startScreen.classList.add('hidden');
     updateVisualState();
 }
+
 
 // function togglePause() { ... } // Removed old togglePause, logic handled by menu listeners
 
