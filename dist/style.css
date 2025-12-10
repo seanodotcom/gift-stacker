@@ -272,6 +272,79 @@ body.theme-christmas {
     /* Centered */
     font-family: 'Chewy', cursive;
     letter-spacing: 2px;
+    display: grid !important;
+    place-items: center;
+    overflow: hidden;
+    height: 1.2em;
+}
+
+.score-digit {
+    grid-area: 1 / 1;
+    will-change: transform, opacity;
+}
+
+.slide-out {
+    animation: slideOutUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.slide-in {
+    animation: slideInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideOutUp {
+    0% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(-150%);
+        opacity: 0;
+    }
+}
+
+@keyframes slideInUp {
+    0% {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.slide-out-down {
+    animation: slideOutDown 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.slide-in-down {
+    animation: slideInDown 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideOutDown {
+    0% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(150%);
+        opacity: 0;
+    }
+}
+
+@keyframes slideInDown {
+    0% {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 .score-pop {
@@ -309,6 +382,16 @@ body.theme-christmas {
     text-align: center;
     margin-top: 5px;
     pointer-events: auto;
+}
+
+/* Leaderboard Header Specifics */
+#leaderboard-modal h2 {
+    font-size: 3rem;
+    /* 50% larger */
+    margin-bottom: 20px;
+    /* Reduced from default which might be large */
+    margin-top: 0;
+    line-height: 1;
 }
 
 /* Settings Modal Specifics */
@@ -861,18 +944,9 @@ button {
 
 /* Constants rotation animation for the gear when idle? No, user asked for "slowly, subtly rotates" */
 /* Let's make it always rotate very slowly */
+/* No spin animation */
 .icon-btn-settings {
-    animation: simpleSpin 10s linear infinite;
-}
-
-@keyframes simpleSpin {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
+    animation: none;
 }
 
 .icon-btn-settings:hover {
@@ -1065,7 +1139,11 @@ button:active {
 
 /* UI Visibility Utility Classes */
 body.bg-blurred #scene,
-body.bg-blurred #christmas-bg {
+body.bg-blurred #christmas-bg,
+body.bg-blurred #score-container,
+body.bg-blurred #menu-btn,
+body.bg-blurred #lives-container,
+body.bg-blurred #timer-container {
     filter: blur(5px);
     transition: filter 0.3s ease;
 }
@@ -1100,4 +1178,383 @@ h2,
 h3 {
     font-family: 'Chewy', cursive !important;
     letter-spacing: 2px;
+}
+
+/* Force specific modals to be opaque */
+#submit-score-modal {
+    background: #ffffff !important;
+    opacity: 1 !important;
+}
+
+/* Leaderboard Styles */
+.large-modal {
+    width: 90%;
+    max-width: 500px;
+    height: 80vh;
+    /* Taller */
+    display: flex;
+    flex-direction: column;
+    background: #ffffff !important;
+    /* Force Opaque White */
+    opacity: 1 !important;
+}
+
+#leaderboard-container {
+    flex: 1;
+    overflow-y: auto;
+    margin: 10px 0;
+    /* Reduced margin (was 20px) */
+    background: transparent;
+    /* Clean look */
+    border-radius: 8px;
+    padding: 10px;
+}
+
+#leaderboard-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#leaderboard-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 10px;
+    /* Reduced padding (was 10px) */
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    /* Very subtle separator */
+    font-size: 1.5rem;
+    /* 40% Larger */
+    background: #f5f5f5;
+    /* Light Gray Background */
+    margin-bottom: 2px;
+    /* Tighter spacing */
+    border-radius: 6px;
+    align-items: center;
+}
+
+#leaderboard-list li:last-child {
+    border-bottom: none;
+}
+
+#leaderboard-list li.loading,
+#leaderboard-list li.empty,
+#leaderboard-list li.error {
+    justify-content: center;
+    font-style: italic;
+    color: #555;
+}
+
+.rank {
+    font-weight: bold;
+    width: 60px;
+    /* Increased spacing */
+    margin-right: 15px;
+    /* Explicit spacing to name */
+}
+
+.name {
+    flex: 1;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 10px;
+}
+
+.score {
+    font-family: 'Chewy', cursive;
+    font-weight: bold;
+    color: #d32f2f;
+    font-size: 1.3rem;
+    /* Reduced by ~30% from 1.8rem */
+}
+
+/* Rank Colors */
+.rank-gold {
+    color: #ffd700;
+    text-shadow: 0 0 2px #b8860b;
+}
+
+.rank-silver {
+    color: #c0c0c0;
+    text-shadow: 0 0 2px #7f7f7f;
+}
+
+.rank-bronze {
+    color: #cd7f32;
+    text-shadow: 0 0 2px #8b4513;
+}
+
+.rank-other {
+    color: #333;
+}
+
+/* Input Styling */
+#player-name-input {
+    width: 80%;
+    padding: 10px;
+    font-size: 1.2rem;
+    margin: 15px 0;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.9);
+    color: #5d4037;
+    /* Cookie Brown */
+    font-family: 'Outfit', sans-serif;
+}
+
+#player-name-input:focus {
+    outline: none;
+    border-color: #d32f2f;
+}
+
+/* Shop Modal Styles */
+.shop-header {
+    background: transparent;
+    /* No ugly orange button look */
+    color: #5d4037 !important;
+    /* Force Cookie Brown */
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-weight: bold;
+    font-size: 1.5rem;
+    display: inline-block;
+    border: 2px solid #ccc;
+    /* Subtle border */
+    font-family: 'Outfit', sans-serif;
+}
+
+#shop-items-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 15px;
+    padding: 10px;
+    /* max-height was causing issues if content large? No, this is for shop. */
+    max-height: 60vh;
+    /* Use viewport height unit for better responsiveness */
+    overflow-y: auto;
+}
+
+.shop-card {
+    background: #fff;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    padding: 15px;
+    /* Increased padding */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    /* overflow: hidden;  <-- Removed to prevent cutting off if content grows */
+    min-height: 220px;
+    /* Ensure enough height for icon + text + price + button */
+    justify-content: space-between;
+    /* Space out content vertically */
+}
+
+.shop-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.shop-card.equipped {
+    border-color: #4caf50;
+    background: #e8f5e9;
+}
+
+.shop-card.equipped::after {
+    content: '✔';
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    color: #4caf50;
+    font-weight: bold;
+}
+
+.shop-icon {
+    width: 50px;
+    /* Reduced from 60px */
+    height: 50px;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    /* Reduced margin (was 10px) */
+    background-size: cover;
+    background-position: center;
+    border: 1px solid #eee;
+}
+
+/* Theme Previews (Colors) */
+.theme-standard-preview {
+    background: linear-gradient(135deg, #2196f3, #64b5f6);
+}
+
+.theme-christmas-preview {
+    background: linear-gradient(135deg, #c62828, #2e7d32);
+}
+
+.theme-neon-preview {
+    background: linear-gradient(135deg, #000, #ff00de);
+    border: 2px solid #00fff2;
+}
+
+.theme-8bit-preview {
+    background: linear-gradient(135deg, #333, #777);
+    image-rendering: pixelated;
+}
+
+/* Placeholder for pixel art */
+.theme-underwater-preview {
+    background: linear-gradient(180deg, #0288d1, #01579b);
+}
+
+.shop-info h3 {
+    margin: 0;
+    font-size: 1.4rem;
+    /* Increased by 40% (1.0 -> 1.4) */
+    color: #333;
+}
+
+.shop-info p {
+    margin: 5px 0 10px 0;
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.shop-btn {
+    width: 100%;
+    padding: 8px;
+    font-size: 0.9rem;
+    border-radius: 5px;
+}
+
+.shop-btn.buy-btn {
+    background: #ff9800;
+}
+
+.shop-btn.equip-btn {
+    background: #2196f3;
+}
+
+.shop-btn.disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* UI Polish v0.6 */
+.start-actions {
+    display: flex;
+    flex-direction: column;
+    /* Force vertical stack */
+    align-items: center;
+    gap: 30px;
+    /* Increased from 10px */
+    width: 100%;
+    margin-top: 20px;
+    /* Added top margin for "extra space" below title */
+}
+
+.sub-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    width: 100%;
+}
+
+.icon-btn-settings {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin: 5px;
+    /* slight margin */
+    padding: 0;
+    background: #e0e0e0;
+    /* Light Gray Background */
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s, background 0.2s;
+    display: flex;
+    /* Flex to center content */
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #333;
+    /* Dark icon color for contrast */
+}
+
+.icon-btn-settings:hover {
+    transform: scale(1.1);
+    /* Scale only, no rotation */
+    filter: brightness(1.1);
+}
+
+.version-info {
+    font-size: 0.8rem;
+    color: #ccc;
+    /* Light gray */
+    margin-top: 20px;
+    font-family: sans-serif;
+    opacity: 0.7;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Submit Modal Text Polish */
+#submit-score-msg {
+    font-size: 1.5rem;
+    /* 50% larger */
+}
+
+#submit-score-val {
+    font-weight: bold;
+}
+
+/* Center the name input */
+#player-name-input {
+    margin: 15px auto;
+    display: block;
+    text-align: center;
+    width: 60%;
+}
+
+/* Game Over Screen Styles - Was missing! */
+#game-over-screen {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.95);
+    padding: 30px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 85%;
+    max-width: 400px;
+    z-index: 1000;
+    /* Ensure it is on top of game, but maybe below High Score modal if z-index logic applies */
+}
+
+/* Ensure Submit Score (New High Score) is on TOP of Game Over if both show */
+#submit-score-modal {
+    z-index: 1100;
+    /* Higher than Game Over */
+}
+
+/* Leaderboard Highlighting */
+.highlight-score {
+    background: #fff9c4 !important;
+    /* Gentle yellow highlight */
+    border: 2px solid #ffeb3b !important;
+    transform: scale(1.02);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    font-weight: bold;
 }

@@ -20,6 +20,15 @@ let gameInterval = null;
 let gameState = 'START';
 let score = 0;
 let highScore = localStorage.getItem('giftStackerHighScore') || 0;
+// Phase 2: Persistence
+let totalScoreBank = parseInt(localStorage.getItem('giftStackerTotalBank')) || 0;
+let unlockedThemes = JSON.parse(localStorage.getItem('giftStackerUnlockedThemes')) || {
+    'christmas': true,
+    'standard': true, // Default unlocked
+    'neon': false,
+    '8bit': false,
+    'underwater': false
+};
 let isPaused = false;
 let spawnerX = 0;
 let spawnerDirection = 1;
@@ -138,6 +147,13 @@ const resetScoreModal = document.getElementById('reset-score-modal');
 const confirmResetBtn = document.getElementById('confirm-reset-btn');
 const cancelResetBtn = document.getElementById('cancel-reset-btn');
 
+// Shop Elements
+const shopBtn = document.getElementById('shop-btn');
+const shopModal = document.getElementById('shop-modal');
+const closeShopBtn = document.getElementById('close-shop-btn');
+const shopBankDisplay = document.getElementById('shop-bank-display');
+const shopItemsContainer = document.getElementById('shop-items-container');
+
 // Settings Elements
 const settingsBtn = document.getElementById('settings-btn');
 const settingsModal = document.getElementById('settings-modal');
@@ -149,6 +165,10 @@ const dropSpeedVal = document.getElementById('drop-speed-val');
 const randomSizesInput = document.getElementById('random-sizes');
 const soundEnabledInput = document.getElementById('sound-enabled');
 // const themeSelect = document.getElementById('theme-select'); // Removed
+// Theme Buttons in Settings (Only show unlocked?)
+// For now, settings just toggles between Christmas/Standard as legacy, 
+// OR we remove theme toggles from Settings and force use of Shop?
+// Let's keep specific toggles for now but update them to be generic or just link to shop.
 const themeBtnChristmas = document.getElementById('theme-christmas');
 const themeBtnStandard = document.getElementById('theme-standard');
 const bounceInput = document.getElementById('bounce');
@@ -181,6 +201,20 @@ const fpsElement = document.getElementById('fps-counter');
 const timerContainer = document.getElementById('timer-container');
 const timerBar = document.getElementById('timer-bar');
 
+// Leaderboard Elements
+const leaderboardModal = document.getElementById('leaderboard-modal');
+const closeLeaderboardBtn = document.getElementById('close-leaderboard-btn');
+const submitScoreModal = document.getElementById('submit-score-modal');
+const scoreSubmitVal = document.getElementById('submit-score-val');
+const playerNameInput = document.getElementById('player-name-input');
+const submitScoreBtn = document.getElementById('submit-score-btn');
+const skipSubmitBtn = document.getElementById('skip-submit-btn');
+const openLeaderboardBtn = document.getElementById('leaderboard-btn');
+// Leaderboard button is now in HTML
+if (openLeaderboardBtn) {
+    // Ensuring it's visible or managed via CSS
+}
+
 // Performance Vars
 let frameCount = 0;
 let lastFpsTime = 0;
@@ -194,19 +228,91 @@ let scoreUpdateTimer = 0;
 // Additional State
 let restitutionVal = parseFloat(localStorage.getItem('giftStackerBounce')) || 0.5;
 let currentDropTimer = 0;
+
+
 let maxDropTime = null; // Seconds, null if disabled
 let timerDelay = 0; // Delay before timer starts dropping (for visual fill)
 
-function applyTheme(theme) {
-    document.body.className = `theme-${theme}`;
-    if (theme === 'christmas') {
-        christmasBg.style.display = 'block';
-        if (snowSystem) snowSystem.active = true;
-    } else {
-        christmasBg.style.display = 'none';
-        if (snowSystem) snowSystem.active = false;
+const Shop = {
+    themes: {
+        'standard': { name: 'Standard', price: 0, desc: 'Classic Blue' },
+        'christmas': { name: 'Christmas', price: 0, desc: 'Festive Holiday' },
+        'neon': { name: 'Neon City', price: 500, desc: 'Cyberpunk Vibes' },
+        '8bit': { name: '8-Bit', price: 1000, desc: 'Retro Pixel Art' },
+        'underwater': { name: 'Underwater', price: 2000, desc: 'Deep Sea' }
+    },
+
+    open: function () {
+        if (!shopModal) return;
+        shopModal.classList.remove('hidden');
+        startScreen.classList.add('hidden');
+        this.updateUI();
+        updateVisualState();
+    },
+
+    updateUI: function () {
+        if (!shopItemsContainer) return;
+        shopItemsContainer.innerHTML = '';
+        shopBankDisplay.innerText = totalScoreBank;
+
+        Object.keys(this.themes).forEach(key => {
+            const theme = this.themes[key];
+            const isUnlocked = unlockedThemes[key];
+            const isEquipped = currentTheme === key;
+
+            const el = document.createElement('div');
+            el.className = `shop-card ${isEquipped ? 'equipped' : ''}`;
+
+            let btnHtml = '';
+            let priceHtml = '';
+
+            if (isEquipped) {
+                btnHtml = `<button class="shop-btn disabled">Equipped</button>`;
+            } else if (isUnlocked) {
+                btnHtml = `<button class="shop-btn equip-btn" onclick="Shop.equip('${key}')">Equip</button>`;
+            } else {
+                const canBuy = totalScoreBank >= theme.price;
+                const btnClass = canBuy ? 'buy-btn' : 'disabled';
+                // Remove price from button, list separately
+                priceHtml = `<div class="shop-price">🍪 ${theme.price}</div>`;
+                btnHtml = `<button class="shop-btn ${btnClass}" onclick="Shop.buy('${key}')">Buy</button>`;
+            }
+
+            el.innerHTML = `
+                <div class="shop-icon theme-${key}-preview"></div>
+                <div class="shop-info">
+                    <h3>${theme.name}</h3>
+                    <p>${theme.desc}</p>
+                    ${priceHtml}
+                    ${btnHtml}
+                </div>
+            `;
+            shopItemsContainer.appendChild(el);
+        });
+    },
+
+    buy: function (key) {
+        const theme = this.themes[key];
+        if (totalScoreBank >= theme.price && !unlockedThemes[key]) {
+            totalScoreBank -= theme.price;
+            unlockedThemes[key] = true;
+            localStorage.setItem('giftStackerTotalBank', totalScoreBank);
+            localStorage.setItem('giftStackerUnlockedThemes', JSON.stringify(unlockedThemes));
+            this.updateUI();
+        }
+    },
+
+    equip: function (key) {
+        if (unlockedThemes[key]) {
+            applyTheme(key);
+            this.updateUI();
+        }
     }
-}
+};
+window.Shop = Shop; // Expose for HTML onclick handlers
+
+
+
 
 function init() {
     // Create engine
@@ -248,6 +354,34 @@ function init() {
 
     startBtn.addEventListener('click', startGame);
     restartBtn.addEventListener('click', startGame);
+
+
+
+    submitScoreBtn.addEventListener('click', () => {
+        const name = playerNameInput.value.trim();
+        if (name) {
+            localStorage.setItem('giftStackerPlayerName', name); // Remember name
+            Leaderboard.submitScore(name, score);
+            submitScoreModal.classList.add('hidden');
+            leaderboardModal.classList.remove('hidden'); // Show leaderboard after submit
+            // Leaderboard.submitScore will handle fetch and highlight
+        }
+    });
+
+    // Enter key support for submission
+    playerNameInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            submitScoreBtn.click();
+        }
+    });
+
+    skipSubmitBtn.addEventListener('click', () => {
+        submitScoreModal.classList.add('hidden');
+        gameOverScreen.classList.remove('hidden'); // Go back to Game Over or just close?
+        // Usually "Submit Score" is an overlay on Game Over or replaces it. 
+        // Let's say it was an overlay, so closing it reveals game over.
+        updateVisualState();
+    });
 
     // Menu & Modals
     menuBtn.addEventListener('click', (e) => {
@@ -298,6 +432,45 @@ function init() {
         }
         updateVisualState();
     });
+
+    // Shop Listeners
+    if (shopBtn) {
+        shopBtn.addEventListener('click', () => {
+            Shop.open();
+        });
+    }
+
+    if (closeShopBtn) {
+        closeShopBtn.addEventListener('click', () => {
+            shopModal.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+            updateVisualState();
+        });
+    }
+
+    // Leaderboard Listeners
+    if (openLeaderboardBtn) {
+        openLeaderboardBtn.addEventListener('click', () => {
+            leaderboardModal.classList.remove('hidden');
+            startScreen.classList.add('hidden');
+            updateVisualState();
+            Leaderboard.fetchLeaderboard();
+        });
+    }
+
+    if (closeLeaderboardBtn) {
+        closeLeaderboardBtn.addEventListener('click', () => {
+            leaderboardModal.classList.add('hidden');
+
+            // Only return to Start Screen if we aren't in Game Over mode
+            const isGameOver = !gameOverScreen.classList.contains('hidden');
+            if (!isGameOver) {
+                startScreen.classList.remove('hidden');
+            }
+
+            updateVisualState();
+        });
+    }
 
     // Settings Listeners
     settingsBtn.addEventListener('click', openSettings);
@@ -391,7 +564,9 @@ function init() {
     }, { once: true });
 
     // Start Snow System
-    snowSystem = new SnowSystem(christmasBg);
+    // Start Particle System (was SnowSystem)
+    snowSystem = new ParticleSystem(christmasBg);
+    // don't start immediately, applyTheme will handle it
     snowSystem.start();
 
     // Verify theme logic for snow
@@ -420,6 +595,10 @@ function init() {
 
     // Initial render loop (just for the background/UI, physics not running yet)
     // Actually, we'll start the loop but only update physics in PLAYING state
+
+    // FETCH TOP 10 SO MIN HIGH SCORE IS READY
+    if (window.Leaderboard) window.Leaderboard.fetchLeaderboard();
+
     updateVisualState();
     requestAnimationFrame(update);
 }
@@ -479,6 +658,8 @@ function loseLife() {
     }
 
     if (lives <= 0) {
+        // gameOver();
+        // Delay slightly for dramatic effect?
         gameOver();
     }
 }
@@ -504,8 +685,12 @@ function updateVisualState() {
     const isResetConfirm = !resetScoreModal.classList.contains('hidden');
     const isReleaseNotes = !releaseNotesModal.classList.contains('hidden');
 
+    const isLeaderboard = !leaderboardModal.classList.contains('hidden');
+    const isSubmitScore = !submitScoreModal.classList.contains('hidden');
+    const isShop = shopModal && !shopModal.classList.contains('hidden');
+
     // Blur Background: Paused, Game Over, or Sub-Modals
-    const shouldBlur = isPausedModal || isGameOver || isQuitConfirm || isResetConfirm || isReleaseNotes;
+    const shouldBlur = isPausedModal || isGameOver || isQuitConfirm || isResetConfirm || isReleaseNotes || isLeaderboard || isSubmitScore || isShop;
     if (shouldBlur) {
         document.body.classList.add('bg-blurred');
     } else {
@@ -514,9 +699,11 @@ function updateVisualState() {
 
     // Hide UI: Start Screen (Splash) or Settings
     const isStartScreen = !startScreen.classList.contains('hidden');
-    const isSettings = !settingsModal.classList.contains('hidden');
+    const isSettings = settingsModal && !settingsModal.classList.contains('hidden');
 
-    const shouldHideUI = isStartScreen || isSettings;
+    // We hide the gameplay UI if any of these "Main Menu" type overlays are open
+    const shouldHideUI = isStartScreen || isSettings || isShop || isLeaderboard;
+
     if (shouldHideUI) {
         document.body.classList.add('ui-hidden');
     } else {
@@ -760,27 +947,8 @@ function update() {
             lastFpsTime = now;
         }
 
-        // SCORING ODOMETER ANIMATION
-        if (displayScore !== score) {
-            scoreUpdateTimer += dt;
-            if (scoreUpdateTimer > 30) { // Update every 30ms (approx 30fps)
-                if (displayScore < score) {
-                    displayScore++;
-                } else {
-                    displayScore--;
-                }
-                scoreElement.innerText = `${displayScore}`;
-                scoreUpdateTimer = 0;
+        // SCORING ODOMETER ANIMATION REMOVED - Handled by CSS Transitions in animateScoreUI
 
-                scoreElement.innerText = `${displayScore}`;
-                scoreUpdateTimer = 0;
-
-                // Pop animation removed for smoother rolling effect
-                // scoreElement.classList.remove('score-pop');
-                // void scoreElement.offsetWidth;
-                // scoreElement.classList.add('score-pop');
-            }
-        }
 
         updateDebugDisplay();
 
@@ -853,9 +1021,13 @@ function update() {
                     // SCORING FIX: If this box had added to the score, remove it!
                     if (box.hasScored) {
                         box.hasScored = false; // Fix: Mark as un-scored so it isn't recounted
+
+                        const oldScore = score;
                         score--;
-                        // Visual update handled by Odometer loop
-                        // Don't update high score here, only on game over or positive change
+                        displayScore = score; // Sync logic
+
+                        // Trigger Decrement Animation
+                        animateScoreUI(oldScore, score);
                     }
 
                     loseLife();
@@ -896,18 +1068,25 @@ function gameOver() {
 
     // Sync the main scorebug to reflect the "stable" score
     scoreElement.innerText = `${score}`;
-
     finalScoreElement.innerText = score;
 
     // Handle High Score
     // Get the previously saved high score (guaranteed stable)
     const savedTop = parseFloat(localStorage.getItem('giftStackerHighScore')) || 0;
 
-    if (score > savedTop) {
-        highScore = score;
-        localStorage.setItem('giftStackerHighScore', highScore);
-        updateHighScoreDisplay();
-        newRecordMsg.classList.remove('hidden'); // Show celebration
+    // Use savedTop for comparison, NOT the internal 'highScore' var which might be stale or equal
+
+    // Check Global Leaderboard qualification
+    const minToBeat = Number(Leaderboard.minHighScore) || 0;
+    const isGlobalHighScore = Leaderboard.minHighScore === undefined || score > minToBeat;
+
+    if (score > savedTop || isGlobalHighScore) {
+        if (score > savedTop) {
+            highScore = score;
+            localStorage.setItem('giftStackerHighScore', highScore);
+            updateHighScoreDisplay();
+            newRecordMsg.classList.remove('hidden'); // Show celebration
+        }
 
         // Confetti!
         confetti({
@@ -927,7 +1106,64 @@ function gameOver() {
         Sound.playGameOver(false);
     }
 
-    gameOverScreen.classList.remove('hidden');
+
+    // Accumulate Total Score (Money)
+    if (score > 0) {
+        totalScoreBank += score;
+        localStorage.setItem('giftStackerTotalBank', totalScoreBank);
+    }
+
+    // Logic for Submit Score:
+    if (score > 0) {
+        // Pre-fill name
+        const savedName = localStorage.getItem('giftStackerPlayerName') || "";
+        playerNameInput.value = savedName;
+
+        // Show score and earned cookies
+        scoreSubmitVal.innerText = score;
+        const submitMsg = document.getElementById('submit-score-msg');
+        if (submitMsg) {
+            const currencyName = score === 1 ? 'Cookie' : 'Cookies'; // Singular/Plural
+            // Tighter spacing (margin-top negative or small line-height) and smaller text (0.9em instead of 1.3em)
+            submitMsg.innerHTML = `
+                Your Score: <span id="submit-score-val" style="font-weight:900;">${score}</span>
+                <div style="margin-top:2px; font-size: 0.7em; color:#4caf50; font-weight:bold;">
+                    +${score} ${currencyName} earned
+                </div>`;
+        }
+
+        // Dynamic Header: Only show "New High Score" if we beat the leaderboard bottom
+        // OR if we beat local high score? User said "below lowest (of 10)". So comparing to global.
+        // Dynamic Header & Controls
+        const modalHeader = submitScoreModal.querySelector('h2');
+        const modalControls = submitScoreModal.querySelector('.modal-buttons');
+
+        // Check global high score qualification (already calculated as isGlobalHighScore)
+        console.log(`Checking High Score: Score ${score} vs MinToBeat ${minToBeat} (Qualifying: ${isGlobalHighScore})`);
+
+        if (modalHeader) {
+            if (isGlobalHighScore) {
+                modalHeader.innerText = "🏆 New High Score!";
+                playerNameInput.classList.remove('hidden'); // Use class
+                if (submitScoreBtn) submitScoreBtn.classList.remove('hidden');
+                if (skipSubmitBtn) skipSubmitBtn.innerText = 'Skip';
+            } else {
+                modalHeader.innerText = "Round Complete";
+                playerNameInput.classList.add('hidden'); // Use class to override CSS !important
+                if (submitScoreBtn) submitScoreBtn.classList.add('hidden');
+                if (skipSubmitBtn) skipSubmitBtn.innerText = 'Continue';
+            }
+        }
+
+        submitScoreModal.classList.remove('hidden');
+        // We show Game Over screen BEHIND it.
+        gameOverScreen.classList.remove('hidden');
+    } else {
+        gameOverScreen.classList.remove('hidden');
+    }
+
+    // gameOverScreen.classList.remove('hidden'); // Already handled above
+    if (startScreen) startScreen.classList.add('hidden'); // Defensive: ensure splash is gone
     updateVisualState();
 }
 
@@ -1007,18 +1243,36 @@ soundEnabledInput.addEventListener('change', () => {
 
 // Settings Functions
 // Snow System
-class SnowSystem {
+// Particle System (formerly SnowSystem)
+class ParticleSystem {
     constructor(container) {
         this.container = container;
-        this.flakes = [];
-        this.active = true;
+        this.particles = [];
+        this.active = false;
         this.spawnInterval = null;
-        this.maxFlakes = 50;
+        this.maxParticles = 50;
+        this.config = {
+            type: 'snow', // snow, bubbles, rain
+            symbol: '❄', // default
+            speedMin: 1,
+            speedMax: 3,
+            sizeMin: 10,
+            sizeMax: 25,
+            directionY: 1, // 1 = down, -1 = up
+            wiggle: true
+        };
+    }
+
+    configure(cfg) {
+        this.config = { ...this.config, ...cfg };
+        // Clear existing when config changes? Yes
+        this.clear();
     }
 
     start() {
-        if (!this.active) return;
-        this.spawnInterval = setInterval(() => this.spawnFlake(), 200);
+        if (this.active) return;
+        this.active = true;
+        this.spawnInterval = setInterval(() => this.spawn(), 200);
         this.updateLoop();
     }
 
@@ -1027,106 +1281,86 @@ class SnowSystem {
         clearInterval(this.spawnInterval);
     }
 
-    spawnFlake() {
-        if (this.flakes.length >= this.maxFlakes) return;
+    clear() {
+        this.particles.forEach(p => p.element.remove());
+        this.particles = [];
+        this.container.innerHTML = ''; // Ensure clean
+    }
 
-        const flake = document.createElement('div');
-        flake.innerHTML = Math.random() > 0.5 ? '❅' : '❆';
-        flake.className = 'snowflake-js';
+    spawn() {
+        if (!this.active || this.particles.length >= this.maxParticles) return;
+
+        const p = document.createElement('div');
+
+        // Symbol determination
+        let content = this.config.symbol;
+        if (this.config.type === 'snow') {
+            content = Math.random() > 0.5 ? '❅' : '❆';
+        } else if (this.config.type === 'bubbles') {
+            content = ''; // CSS circle
+        }
+
+        p.innerHTML = content;
+        p.className = 'snowflake-js'; // Keep class for basic absolute positioning styles
+        if (this.config.type === 'bubbles') p.classList.add('bubble');
 
         // Random properties
-        const size = 10 + Math.random() * 15;
+        const size = this.config.sizeMin + Math.random() * (this.config.sizeMax - this.config.sizeMin);
         const x = Math.random() * window.innerWidth;
-        const duration = 5000 + Math.random() * 5000;
-        const delay = Math.random() * 2000;
-        const blur = Math.random() * 2;
+        const speed = this.config.speedMin + Math.random() * (this.config.speedMax - this.config.speedMin);
 
-        flake.style.cssText = `
+        // Start Y depend on direction
+        let startY = -20;
+        if (this.config.directionY === -1) startY = window.innerHeight + 20;
+
+        p.style.cssText = `
             left: ${x}px;
             font-size: ${size}px;
-            animation-duration: ${duration}ms;
-            filter: blur(${blur}px);
+            position: absolute;
+            top: ${startY}px;
             opacity: 0.8;
-            top: -20px;
+            pointer-events: none;
+            color: ${this.config.type === 'neon' ? '#00e5ff' : 'white'};
         `;
 
-        this.container.appendChild(flake);
+        if (this.config.type === 'bubbles') {
+            p.style.width = `${size}px`;
+            p.style.height = `${size}px`;
+        }
 
-        const flakeObj = {
-            element: flake,
+        this.container.appendChild(p);
+
+        this.particles.push({
+            element: p,
             x: x,
-            y: -20,
-            speed: (window.innerHeight + 20) / (duration / 16),
-            landed: false,
-            meltTimer: 0,
-            flutter: Math.random() < 0.3, // 30% chance to flutter
-            flutterSpeed: 1.5 + Math.random() * 2.0, // Radians per second
-            flutterOffset: Math.random() * 100
-        };
-
-        this.flakes.push(flakeObj);
+            y: startY,
+            speed: speed,
+            config: this.config
+        });
     }
 
     updateLoop() {
         if (!this.active) return;
 
-        // Platform Y is around window.innerHeight - 50
-        const platformY = window.innerHeight - 50;
-        const platformX = window.innerWidth / 2;
-        // platformWidth is global
+        const height = window.innerHeight;
 
-        this.flakes.forEach((f, index) => {
-            if (f.landed) {
-                f.meltTimer++;
-                if (f.meltTimer > 100) { // Melt away
-                    f.element.style.opacity = Math.max(0, 0.8 - (f.meltTimer - 100) * 0.02);
-                    if (f.meltTimer > 150) {
-                        f.element.remove();
-                        this.flakes.splice(index, 1);
-                    }
-                }
-                return;
+        this.particles.forEach((p, index) => {
+            p.y += p.speed * p.config.directionY;
+            p.element.style.top = `${p.y}px`;
+
+            // Wiggle
+            if (p.config.wiggle) {
+                const xOffset = Math.sin(Date.now() / 1000 + p.x) * (p.config.type === 'bubbles' ? 2 : 0.5);
+                p.element.style.transform = `translateX(${xOffset}px)`;
             }
 
-            f.y += f.speed;
-            f.element.style.top = `${f.y}px`;
-
-            // Horizontal Movement
-            let currentX = f.x;
-
-            // Wiggle (standard)
-            let xOffset = Math.sin(Date.now() / 1000 + f.x) * 0.5;
-
-            // Flutter effect (stronger side-to-side)
-            if (f.flutter) {
-                // Use Date.now() / 1000 for seconds-based smooth animation
-                // f.flutterSpeed was ~0.05. 
-                // Math.sin(time * speed) -> speed need to be around 1-3 for gentle wave
-                // Date.now()/1000 * (1 + random)
-
-                // Let's redefine flutterSpeed usage:
-                // Pre-calculated speed factor: 2.0 to 4.0
-                const t = Date.now() / 1000;
-                xOffset += Math.sin(t * f.flutterSpeed + f.flutterOffset) * 20.0; // Wide subtle swing
-            }
-
-            f.element.style.left = `${currentX + xOffset}px`; // Apply directly to left to avoid transform overwrites
-            // We kept transform translateX previously but modifying left is cleaner for flutter
-            // Actually, let's stick to transform for performance, but combine them.
-            f.element.style.transform = `translateX(${xOffset}px)`;
-
-            // Check landing on platform
-            if (f.y >= platformY && f.y <= platformY + 10) {
-                if (Math.abs(f.x - platformX) < platformWidth / 2) {
-                    f.landed = true;
-                    // f.element.style.color = '#e0f7fa'; // Icy look?
-                }
-            }
-
-            // Remove if fallen off screen
-            if (f.y > window.innerHeight) {
-                f.element.remove();
-                this.flakes.splice(index, 1);
+            // Remove if off screen
+            if (p.config.directionY === 1 && p.y > height) {
+                p.element.remove();
+                this.particles.splice(index, 1);
+            } else if (p.config.directionY === -1 && p.y < -50) {
+                p.element.remove();
+                this.particles.splice(index, 1);
             }
         });
 
@@ -1155,26 +1389,25 @@ function openSettings() {
 function applyTheme(theme) {
     document.body.className = `theme-${theme}`;
 
+    if (!snowSystem) return; // safety
+
+    snowSystem.stop();
+    christmasBg.innerHTML = ''; // Clear old particles
+
     if (theme === 'christmas') {
-        if (christmasBg) christmasBg.style.display = 'block';
-        if (snowSystem) {
-            snowSystem.active = true;
-            if (snowSystem.container.children.length === 0) {
-                // Restart loop if likely stopped or empty
-                snowSystem.updateLoop();
-            } else {
-                // Ensure loop is running by checking a flag or just call it?
-                // Calling it twice multiplies the speed.
-                // Better to checking if requestAnimation frame is active?
-                // SnowSystem simple version:
-                // Let's just set active=true. The loop checks active?
-                // If active was false, the loop terminated. So we MUST restart it.
-                snowSystem.updateLoop();
-            }
-        }
+        christmasBg.style.display = 'block';
+        snowSystem.configure({ type: 'snow', directionY: 1, speedMin: 1, speedMax: 3, symbol: null });
+        snowSystem.start();
+    } else if (theme === 'underwater') {
+        christmasBg.style.display = 'block';
+        snowSystem.configure({ type: 'bubbles', directionY: -1, speedMin: 1, speedMax: 2, symbol: '' });
+        snowSystem.start();
+    } else if (theme === 'neon') {
+        christmasBg.style.display = 'block';
+        snowSystem.configure({ type: 'neon', symbol: '|', directionY: 1, speedMin: 5, speedMax: 10 });
+        snowSystem.start();
     } else {
-        if (christmasBg) christmasBg.style.display = 'none';
-        if (snowSystem) snowSystem.active = false;
+        christmasBg.style.display = 'none';
     }
 
     currentTheme = theme;
@@ -1184,14 +1417,13 @@ function applyTheme(theme) {
 }
 
 function updateThemeButtonsUI() {
-    // Visual toggle
-    if (currentTheme === 'christmas') {
-        themeBtnChristmas.classList.add('active');
-        themeBtnStandard.classList.remove('active');
-    } else {
-        themeBtnStandard.classList.add('active');
-        themeBtnChristmas.classList.remove('active');
-    }
+    if (!themeBtnChristmas || !themeBtnStandard) return;
+
+    themeBtnChristmas.classList.remove('active');
+    themeBtnStandard.classList.remove('active');
+
+    if (currentTheme === 'christmas') themeBtnChristmas.classList.add('active');
+    else if (currentTheme === 'standard') themeBtnStandard.classList.add('active');
 }
 
 function saveSettings() {
@@ -1252,21 +1484,50 @@ function checkScore(body, otherBody) {
             const newScore = boxes.filter(b => b.hasScored).length;
 
             // Update score state
-            score = newScore;
-            // Visual update handled by Odometer loop
+            if (newScore > score) {
+                // Update score state
+                const oldScore = score;
+                score = newScore;
+                displayScore = score; // Sync display score immediately logic-wise
 
-            if (score > 0 && score > displayScore) {
-                // Sound
-                Sound.playScore();
+                // Trigger Animation
+                animateScoreUI(oldScore, score);
 
-                // Optimistically update High Score Display (but don't save to LS yet)
-                if (score > highScore) {
-                    highScore = score;
-                    updateHighScoreDisplay();
+                if (score > 0) {
+                    // Sound
+                    Sound.playScore();
+
+                    // High Score is now only updated at Game Over to avoid "last block fall" bug.
                 }
             }
         }
     }
+}
+
+function animateScoreUI(oldVal, newVal) {
+    if (!scoreElement) return;
+
+    // Determine direction
+    const isUp = newVal > oldVal;
+
+    // Clear content to construct animation structure
+    scoreElement.innerHTML = '';
+
+    const oldSpan = document.createElement('span');
+    oldSpan.textContent = oldVal;
+    oldSpan.className = isUp ? 'score-digit slide-out' : 'score-digit slide-out-down';
+
+    const newSpan = document.createElement('span');
+    newSpan.textContent = newVal;
+    newSpan.className = isUp ? 'score-digit slide-in' : 'score-digit slide-in-down';
+
+    scoreElement.appendChild(oldSpan);
+    scoreElement.appendChild(newSpan);
+
+    // Cleanup after animation completes
+    setTimeout(() => {
+        if (scoreElement) scoreElement.innerText = newVal;
+    }, 500);
 }
 
 function checkPerformance(fps) {
