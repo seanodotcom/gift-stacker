@@ -90,7 +90,7 @@
             </div>
 
             <button id="quit-game-btn" class="secondary-btn">Quit Game</button>
-            <button id="release-notes-btn" class="text-link">ℹ️ Gift Stacker v0.7.0</button>
+            <button id="release-notes-btn" class="text-link">ℹ️ Gift Stacker v0.7.2</button>
         </div>
 
         <!-- Quit Confirmation Modal -->
@@ -114,8 +114,15 @@
 
         <!-- Release Notes Modal -->
         <div id="release-notes-modal" class="modal hidden">
-            <h2>Release Notes v0.7.0</h2>
+            <h2>Release Notes v0.7.2</h2>
             <div class="scroll-content">
+                <h3>v0.7.2 - Sharing is Caring 🎁</h3>
+                <ul>
+                    <li>📤 <strong>Sharing:</strong> Share your high scores with friends!</li>
+                    <li>📋 <strong>Copy Message:</strong> Easily copy your stack stats.</li>
+                    <li>🎨 <strong>Polish:</strong> UI improvements and button tweaks.</li>
+                </ul>
+                <hr>
                 <h3>v0.7.0 - The Shiny Update ✨</h3>
                 <ul>
                     <li>✨ <strong>Visuals:</strong> Splash screen makeover & cleaner UI style.</li>
@@ -169,14 +176,8 @@
             <h2>Stack the gifts as high as you can!</h2>
             <!-- High Score Removed -->
             <div class="start-actions">
-                <button id="start-btn">Start Game</button>
-                <div class="sub-actions">
-                    <button id="shop-btn" class="icon-btn-settings" title="Shop">
-                        🛍️
-                    </button>
-                    <button id="leaderboard-btn" class="icon-btn-settings" title="Leaderboard">
-                        🏆
-                    </button>
+                <div class="main-actions-row" style="display: flex; align-items: center; gap: 10px;">
+                    <button id="start-btn">Start Game</button>
                     <button id="settings-btn" class="icon-btn-settings" title="Settings">
                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
                             viewBox="0 0 24 24"><!-- Icon from Material Symbols by Google - https://github.com/google/material-design-icons/blob/master/LICENSE -->
@@ -185,9 +186,20 @@
                         </svg>
                     </button>
                 </div>
+                <div class="sub-actions">
+                    <button id="shop-btn" class="icon-btn-settings" title="Shop">
+                        🛍️
+                    </button>
+                    <button id="leaderboard-btn" class="icon-btn-settings" title="Leaderboard">
+                        🏆
+                    </button>
+                    <button id="start-share-btn" class="icon-btn-settings" title="Share Game">
+                        📤
+                    </button>
+                </div>
             </div>
 
-            <div class="version-info">v0.7.0 by Sean O</div>
+            <div class="version-info">v0.7.2 by Sean O</div>
         </div>
 
         <!-- Shop Modal -->
@@ -300,7 +312,21 @@
         </div>
 
         <div class="leaderboard-controls">
+            <button id="leaderboard-share-btn" class="secondary-btn hidden" style="margin-right: 10px;">Share Score
+                📤</button>
             <button id="close-leaderboard-btn" class="btn">Close</button>
+        </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div id="share-modal" class="modal hidden">
+        <h2>Share Your Stack! 🎁</h2>
+        <p>Tell your friends how high you stacked!</p>
+        <textarea id="share-text" rows="4"
+            style="width: 100%; margin: 10px 0; padding: 10px; border-radius: 8px; border: 2px solid #333; font-family: 'Outfit', sans-serif; resize: none;"></textarea>
+        <div class="modal-actions">
+            <button id="copy-share-btn" class="primary-btn">Copy Message 📋</button>
+            <button id="close-share-btn" class="secondary-btn">Close</button>
         </div>
     </div>
 

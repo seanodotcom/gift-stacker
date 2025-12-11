@@ -1653,3 +1653,19 @@ h3 {
     font-size: 1rem;
     white-space: nowrap;
 }
+
+/* Share Modal Polish */
+#share-modal {
+    width: 60%;
+    max-width: 600px; /* Override default 400px constraint */
+}
+
+#share-modal textarea {
+    box-sizing: border-box; /* Prevent scrollbar due to padding */
+    width: 100%;
+}
+
+/* Ensure sub-actions wrapper has margin if needed */
+.sub-actions {
+    margin-top: 10px;
+}

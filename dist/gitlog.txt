@@ -1,0 +1,41 @@
+commit 7bf69fac148faa6b4db72769d38771c38738fe1d
+Author: Sean O <seanodotcom@yahoo.com>
+Date:   Mon Dec 8 10:21:39 2025 -0500
+
+    v0.4.4 - Scoring Fixes, Odometer, and Perf Mode
+
+commit 6bcdde46cf5ca906db1c9aa93f38267733f6efd4
+Author: Sean O <seanodotcom@yahoo.com>
+Date:   Mon Dec 8 09:47:48 2025 -0500
+
+    v0.4.2 - Polish and Difficulty Tuning
+
+commit 85e5bc9db6d05a78a9119e5ccc97d72792fbb3ea
+Author: Sean O <seanodotcom@yahoo.com>
+Date:   Fri Dec 5 17:00:39 2025 -0500
+
+    Release v0.4: Lives System, Difficulty Levels, and UI Polish
+
+commit ff791cc8734673e1f405084b21205fdb9719f247
+Author: Sean O <seanodotcom@yahoo.com>
+Date:   Fri Dec 5 14:53:34 2025 -0500
+
+    Release v0.3: New Themes, Sounds, Controls, and Polish
+
+commit 5af605dd6dfc632cf1dd176c8467d95cee819924
+Author: Sean O <seanodotcom@yahoo.com>
+Date:   Fri Dec 5 14:53:07 2025 -0500
+
+    Release v0.3: New Themes, Sounds, Controls, and Polish
+
+commit 652c11f637bd79f3848479574f6848f5a22208b7
+Author: Sean O <seanodotcom@yahoo.com>
+Date:   Fri Dec 5 11:44:15 2025 -0500
+
+    v0.2 Release: UI Polish, Snow Physics, and Scorebug Redesign
+
+commit 72f4a8d37c1fd88c01ed0abf7606cca30b2ed2bb
+Author: Sean O <seanodotcom@yahoo.com>
+Date:   Thu Dec 4 17:04:19 2025 -0500
+
+    Initial commit: Gift Stacker game with all features

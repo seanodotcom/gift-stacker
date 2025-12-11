@@ -215,6 +215,16 @@ if (openLeaderboardBtn) {
     // Ensuring it's visible or managed via CSS
 }
 
+// Share Elements
+const shareModal = document.getElementById('share-modal');
+const shareText = document.getElementById('share-text');
+const copyShareBtn = document.getElementById('copy-share-btn');
+const closeShareBtn = document.getElementById('close-share-btn');
+const startShareBtn = document.getElementById('start-share-btn');
+const leaderboardShareBtn = document.getElementById('leaderboard-share-btn');
+
+let lastSubmittedScore = 0; // Track for sharing
+
 // Performance Vars
 let frameCount = 0;
 let lastFpsTime = 0;
@@ -370,6 +380,10 @@ function init() {
         if (name) {
             localStorage.setItem('giftStackerPlayerName', name); // Remember name
             Leaderboard.submitScore(name, score);
+            lastSubmittedScore = score; // Store for sharing
+            // Show share button on leaderboard
+            leaderboardShareBtn.classList.remove('hidden');
+
             submitScoreModal.classList.add('hidden');
             leaderboardModal.classList.remove('hidden'); // Show leaderboard after submit
             // Leaderboard.submitScore will handle fetch and highlight
@@ -456,6 +470,7 @@ function init() {
         openLeaderboardBtn.addEventListener('click', () => {
             leaderboardModal.classList.remove('hidden');
             startScreen.classList.add('hidden');
+            leaderboardShareBtn.classList.add('hidden'); // Hide share button when opening normally
             updateVisualState();
             Leaderboard.fetchLeaderboard();
         });
@@ -518,6 +533,42 @@ function init() {
         resetScoreModal.classList.add('hidden');
         updateVisualState();
     });
+
+    // Share Listeners
+    if (startShareBtn) {
+        startShareBtn.addEventListener('click', () => {
+            openShareModal();
+        });
+    }
+
+    if (leaderboardShareBtn) {
+        leaderboardShareBtn.addEventListener('click', () => {
+            openShareModal(lastSubmittedScore);
+        });
+    }
+
+    if (closeShareBtn) {
+        closeShareBtn.addEventListener('click', () => {
+            shareModal.classList.add('hidden');
+            updateVisualState();
+        });
+    }
+
+    if (copyShareBtn) {
+        copyShareBtn.addEventListener('click', () => {
+            if (shareText) {
+                shareText.select();
+                shareText.setSelectionRange(0, 99999); // Mobile
+                navigator.clipboard.writeText(shareText.value).then(() => {
+                    showToast("Copied to clipboard! 📋");
+                }).catch(err => {
+                    console.error('Failed to copy text: ', err);
+                    document.execCommand('copy'); // Fallback
+                    showToast("Copied!");
+                });
+            }
+        });
+    }
 
     // Set gravity
     engine.world.gravity.y = BASE_GRAVITY * dropSpeedMult;
@@ -699,7 +750,8 @@ function updateVisualState() {
     const isSettings = settingsModal && !settingsModal.classList.contains('hidden');
 
     // We hide the gameplay UI if any of these "Main Menu" type overlays are open
-    const shouldHideUI = isStartScreen || isSettings || isShop || isLeaderboard;
+    const isShare = !shareModal.classList.contains('hidden');
+    const shouldHideUI = isStartScreen || isSettings || isShop || isLeaderboard || isShare;
 
     if (shouldHideUI) {
         document.body.classList.add('ui-hidden');
@@ -1146,9 +1198,8 @@ function gameOver() {
         if (submitMsg) {
             const currencyName = score === 1 ? 'Cookie' : 'Cookies';
             submitMsg.innerHTML = `
-                Your Score: <span id="submit-score-val" style="font-weight:900;">${score}</span>
-                    +${score} ${currencyName} earned 🍪
-                </div>`;
+                <div>Your Score: <span id="submit-score-val" style="font-weight:900;">${score}</span></div>
+                <div style="color: #4caf50; font-weight: bold; margin-top: 5px;">+${score} ${currencyName} earned 🍪</div>`;
         }
 
         // Configure Modal for High Score
@@ -1602,4 +1653,19 @@ function updateUIVisibility(visible) {
             else el.classList.add('hidden');
         }
     });
+}
+function openShareModal(scoreVal = 0) {
+    shareModal.classList.remove('hidden');
+    updateVisualState();
+
+    const appUrl = window.location.href;
+    let msg = `How high can YOU stack those gifts? 🎁\nPlay Gift Stacker & find out! ${appUrl}`;
+
+    if (scoreVal > 0) {
+        msg = `I just stacked ${scoreVal} gifts! How high can YOU stack them? 🎁\nPlay Gift Stacker & find out! ${appUrl}`;
+    }
+
+    if (shareText) {
+        shareText.value = msg;
+    }
 }
