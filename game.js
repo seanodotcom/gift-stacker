@@ -310,6 +310,7 @@ const Shop = {
             localStorage.setItem('giftStackerTotalBank', totalScoreBank);
             localStorage.setItem('giftStackerUnlockedThemes', JSON.stringify(unlockedThemes));
             this.updateUI();
+            showToast(`Purchased ${theme.name}! 🛍️`);
         }
     },
 
@@ -1333,7 +1334,10 @@ class ParticleSystem {
             speedMax: 3,
             sizeMin: 10,
             sizeMax: 25,
+            sizeMax: 25,
             directionY: 1, // 1 = down, -1 = up
+            directionX: 0, // X velocity
+            rotation: 0,   // visual rotation
             wiggle: true
         };
     }
@@ -1378,15 +1382,42 @@ class ParticleSystem {
         p.innerHTML = content;
         p.className = 'snowflake-js'; // Keep class for basic absolute positioning styles
         if (this.config.type === 'bubbles') p.classList.add('bubble');
+        if (this.config.type === 'neon') p.classList.add('neon-rain');
 
         // Random properties
         const size = this.config.sizeMin + Math.random() * (this.config.sizeMax - this.config.sizeMin);
-        const x = Math.random() * window.innerWidth;
+        let x = Math.random() * window.innerWidth;
         const speed = this.config.speedMin + Math.random() * (this.config.speedMax - this.config.speedMin);
 
         // Start Y depend on direction
-        let startY = -20;
+        let startY = -40; // Default off top
         if (this.config.directionY === -1) startY = window.innerHeight + 20;
+
+        // If strong X direction (Neon), randomly start further left/right to cover screen
+        if (this.config.directionX !== 0) {
+            x = Math.random() * (window.innerWidth + 200) - 100; // Wide buffer
+        }
+
+        // Color Logic
+        let colorStyle = this.config.type === 'neon' ? '#00e5ff' : 'white';
+        let extraStyle = '';
+
+        // Direction & Rotation Logic (Randomize side for Neon)
+        let dirX = this.config.directionX || 0;
+        let rot = this.config.rotation || 0;
+
+        if (this.config.type === 'neon') {
+            const neonColors = ['#00fff2', '#ff00ff', '#bc13fe', '#39ff14', '#ffd700'];
+            const randColor = neonColors[Math.floor(Math.random() * neonColors.length)];
+            colorStyle = randColor;
+            extraStyle = `background: linear-gradient(to bottom, transparent, ${randColor}); box-shadow: 0 0 5px ${randColor};`;
+
+            // Randomize Left/Right fall
+            if (Math.random() > 0.5) {
+                dirX = -dirX;
+                rot = -rot; // Mirror the angle
+            }
+        }
 
         p.style.cssText = `
             left: ${x}px;
@@ -1395,7 +1426,9 @@ class ParticleSystem {
             top: ${startY}px;
             opacity: 0.8;
             pointer-events: none;
-            color: ${this.config.type === 'neon' ? '#00e5ff' : 'white'};
+            color: ${colorStyle};
+            transform: rotate(${rot}deg);
+            ${extraStyle}
         `;
 
         if (this.config.type === 'bubbles') {
@@ -1410,10 +1443,11 @@ class ParticleSystem {
             x: x,
             y: startY,
             speed: speed,
-            config: this.config
+            config: this.config,
+            directionX: dirX,
+            rotation: rot
         });
     }
-
     updateLoop() {
         if (!this.active) return;
 
@@ -1421,19 +1455,34 @@ class ParticleSystem {
 
         this.particles.forEach((p, index) => {
             p.y += p.speed * p.config.directionY;
+            // Use specific directionX if available, else config
+            const dx = p.directionX !== undefined ? p.directionX : (p.config.directionX || 0);
+            p.x += (p.speed * 1.5) * dx;
+
             p.element.style.top = `${p.y}px`;
+            p.element.style.left = `${p.x}px`; // Needs left update now
 
             // Wiggle
+            // Use specific rotation if available
+            const rotation = p.rotation !== undefined ? p.rotation : (p.config.rotation || 0);
+            let transform = `rotate(${rotation}deg)`;
+
             if (p.config.wiggle) {
                 const xOffset = Math.sin(Date.now() / 1000 + p.x) * (p.config.type === 'bubbles' ? 2 : 0.5);
-                p.element.style.transform = `translateX(${xOffset}px)`;
+                transform += ` translateX(${xOffset}px)`;
             }
+            p.element.style.transform = transform;
 
             // Remove if off screen
             if (p.config.directionY === 1 && p.y > height) {
                 p.element.remove();
                 this.particles.splice(index, 1);
             } else if (p.config.directionY === -1 && p.y < -50) {
+                p.element.remove();
+                this.particles.splice(index, 1);
+            }
+            // Side cleanup
+            else if (p.x > window.innerWidth + 100 || p.x < -100) {
                 p.element.remove();
                 this.particles.splice(index, 1);
             }
@@ -1462,7 +1511,9 @@ function openSettings() {
 
 
 function applyTheme(theme) {
-    document.body.className = `theme-${theme}`;
+    document.body.setAttribute('data-theme', theme);
+    // Remove class-based logic if present, though setAttribute overrides it implicitly for CSS selectors checking attr
+    document.body.className = ''; // Clear classes to be safe if mixing
 
     if (!snowSystem) return; // safety
 
@@ -1479,7 +1530,8 @@ function applyTheme(theme) {
         snowSystem.start();
     } else if (theme === 'neon') {
         christmasBg.style.display = 'block';
-        snowSystem.configure({ type: 'neon', symbol: '|', directionY: 1, speedMin: 5, speedMax: 10 });
+        // SE Direction: Right (+0.15) and Down (+1). Rotation -10deg visually (steeper)
+        snowSystem.configure({ type: 'neon', symbol: '', directionY: 1, directionX: 0.15, speedMin: 10, speedMax: 18, rotation: -10, wiggle: false });
         snowSystem.start();
     } else {
         // Standard or default - NO SNOW
@@ -1635,7 +1687,7 @@ function showToast(msg) {
 
     setTimeout(() => {
         toastElement.classList.remove('show');
-        setTimeout(() => toastElement.classList.add('hidden'), 500);
+        setTimeout(() => toastElement.classList.add('hidden'), 800);
     }, 3000);
 }
 
@@ -1659,13 +1711,29 @@ function openShareModal(scoreVal = 0) {
     updateVisualState();
 
     const appUrl = window.location.href;
-    let msg = `How high can YOU stack those gifts? 🎁\nPlay Gift Stacker & find out! ${appUrl}`;
+    let msg = `How high can YOU stack those gifts ? 🎁\nPlay Gift Stacker & find out! ${appUrl} `;
 
     if (scoreVal > 0) {
-        msg = `I just stacked ${scoreVal} gifts! How high can YOU stack them? 🎁\nPlay Gift Stacker & find out! ${appUrl}`;
+        msg = `I just stacked ${scoreVal} gifts! How high can YOU stack them ? 🎁\nPlay Gift Stacker & find out! ${appUrl} `;
     }
 
     if (shareText) {
         shareText.value = msg;
     }
 }
+
+// CHEAT CODE FOR TESTING
+// CHEAT CODE FOR TESTING
+window.addEventListener('keydown', (e) => {
+    // Shift + C to add 1000 cookies
+    // Check code to avoid CapsLock weirdness
+    if (e.code === 'KeyC' && e.shiftKey) {
+        totalScoreBank += 1000;
+        localStorage.setItem('giftStackerTotalBank', totalScoreBank);
+        showToast("Cheat: +1000 Cookies! 🍪");
+        // Update shop if open
+        if (typeof Shop !== 'undefined' && shopModal && !shopModal.classList.contains('hidden')) {
+            Shop.updateUI();
+        }
+    }
+});
