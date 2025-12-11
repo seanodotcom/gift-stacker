@@ -235,8 +235,8 @@ let timerDelay = 0; // Delay before timer starts dropping (for visual fill)
 
 const Shop = {
     themes: {
-        'standard': { name: 'Standard', price: 0, desc: 'Classic Blue' },
         'christmas': { name: 'Christmas', price: 0, desc: 'Festive Holiday' },
+        'standard': { name: 'Standard', price: 0, desc: 'Classic Blue' },
         'neon': { name: 'Neon City', price: 500, desc: 'Cyberpunk Vibes' },
         '8bit': { name: '8-Bit', price: 1000, desc: 'Retro Pixel Art' },
         'underwater': { name: 'Underwater', price: 2000, desc: 'Deep Sea' }
@@ -263,19 +263,21 @@ const Shop = {
             const el = document.createElement('div');
             el.className = `shop-card ${isEquipped ? 'equipped' : ''}`;
 
-            let btnHtml = '';
-            let priceHtml = '';
+            let actionHtml = '';
 
             if (isEquipped) {
-                btnHtml = `<button class="shop-btn disabled">Equipped</button>`;
+                actionHtml = `<div class="shop-action-row center"><button class="shop-btn disabled">Equipped</button></div>`;
             } else if (isUnlocked) {
-                btnHtml = `<button class="shop-btn equip-btn" onclick="Shop.equip('${key}')">Equip</button>`;
+                actionHtml = `<div class="shop-action-row center"><button class="shop-btn equip-btn" onclick="Shop.equip('${key}')">Equip</button></div>`;
             } else {
                 const canBuy = totalScoreBank >= theme.price;
                 const btnClass = canBuy ? 'buy-btn' : 'disabled';
-                // Remove price from button, list separately
-                priceHtml = `<div class="shop-price">🍪 ${theme.price}</div>`;
-                btnHtml = `<button class="shop-btn ${btnClass}" onclick="Shop.buy('${key}')">Buy</button>`;
+                actionHtml = `
+                    <div class="shop-action-row">
+                        <div class="shop-price">🍪 ${theme.price}</div>
+                        <button class="shop-btn ${btnClass}" onclick="Shop.buy('${key}')">Buy</button>
+                    </div>
+                `;
             }
 
             el.innerHTML = `
@@ -283,8 +285,7 @@ const Shop = {
                 <div class="shop-info">
                     <h3>${theme.name}</h3>
                     <p>${theme.desc}</p>
-                    ${priceHtml}
-                    ${btnHtml}
+                    ${actionHtml}
                 </div>
             `;
             shopItemsContainer.appendChild(el);
@@ -556,6 +557,9 @@ function init() {
     // Show initial high score
     updateHighScoreDisplay();
 
+    // Init Particle System Ref (before applyTheme)
+    snowSystem = new ParticleSystem(christmasBg);
+
     // Apply saved theme
     applyTheme(currentTheme);
     applyDifficulty(currentDifficulty);
@@ -565,17 +569,8 @@ function init() {
         Sound.init();
     }, { once: true });
 
-    // Start Snow System
-    // Start Particle System (was SnowSystem)
-    snowSystem = new ParticleSystem(christmasBg);
-    // don't start immediately, applyTheme will handle it
-    snowSystem.start();
-
-    // Verify theme logic for snow
-    if (currentTheme !== 'christmas') {
-        snowSystem.active = false;
-        christmasBg.style.display = 'none';
-    }
+    // Start Snow System - MOVED UP
+    // See top of init()
 
     // Sync Pause Sound Toggle with Settings
     if (pauseSoundEnabledInput) {
@@ -1152,8 +1147,7 @@ function gameOver() {
             const currencyName = score === 1 ? 'Cookie' : 'Cookies';
             submitMsg.innerHTML = `
                 Your Score: <span id="submit-score-val" style="font-weight:900;">${score}</span>
-                <div style="margin-top:2px; font-size: 0.7em; color:#4caf50; font-weight:bold;">
-                    +${score} ${currencyName} earned
+                    +${score} ${currencyName} earned 🍪
                 </div>`;
         }
 
@@ -1437,7 +1431,10 @@ function applyTheme(theme) {
         snowSystem.configure({ type: 'neon', symbol: '|', directionY: 1, speedMin: 5, speedMax: 10 });
         snowSystem.start();
     } else {
+        // Standard or default - NO SNOW
         christmasBg.style.display = 'none';
+        snowSystem.stop();
+        snowSystem.clear(); // Force clear particles
     }
 
     currentTheme = theme;

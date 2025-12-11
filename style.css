@@ -156,9 +156,30 @@ body.theme-christmas {
 /* Enable pointer events for interactive elements */
 .modal,
 #game-over-screen,
-.icon-btn,
 #start-screen {
     pointer-events: auto;
+    position: relative;
+    width: 85%;
+    /* Reduced from 90% */
+    max-width: 400px;
+    /* Limit width for card look */
+    background: rgba(255, 255, 255, 0.9);
+    /* Restore card look if lost */
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+    /* Center in flex container (ui-layer needs flex) OR absolute center */
+    top: 50%;
+    left: 50%;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    padding-bottom: 80px;
+    /* Increased space for footer */
 }
 
 #score-container {
@@ -386,10 +407,11 @@ body.theme-christmas {
 
 /* Leaderboard Header Specifics */
 #leaderboard-modal h2 {
-    font-size: 3rem;
-    /* 50% larger */
+    font-size: clamp(1.5rem, 8vw, 2.4rem);
+    /* Responsive sizing */
+    white-space: nowrap;
+    /* Force single line */
     margin-bottom: 20px;
-    /* Reduced from default which might be large */
     margin-top: 0;
     line-height: 1;
 }
@@ -556,6 +578,15 @@ button {
     border: none;
     color: rgba(255, 255, 255, 0.8);
     pointer-events: auto;
+}
+
+#menu-btn {
+    position: fixed;
+    /* Force relative to viewport */
+    top: 20px;
+    right: 20px;
+    z-index: 2000;
+    /* Ensure on top of everything */
 }
 
 .icon-btn:hover {
@@ -784,7 +815,7 @@ button {
     min-width: 320px;
     max-width: 90%;
     text-align: center;
-    z-index: 100;
+    z-index: 2000;
     display: flex;
     flex-direction: column;
     animation: fadeIn 0.3s ease-out;
@@ -1188,8 +1219,10 @@ h3 {
 
 /* Leaderboard Styles */
 .large-modal {
-    width: 90%;
-    max-width: 500px;
+    width: 85%;
+    /* Reduced from 90% */
+    max-width: 825px;
+    /* Increased by ~25% from 660px */
     height: 80vh;
     /* Taller */
     display: flex;
@@ -1197,6 +1230,8 @@ h3 {
     background: #ffffff !important;
     /* Force Opaque White */
     opacity: 1 !important;
+    text-align: center;
+    /* Ensure header centering */
 }
 
 #leaderboard-container {
@@ -1214,6 +1249,8 @@ h3 {
     list-style: none;
     padding: 0;
     margin: 0;
+    min-width: 18em;
+    /* Prevent scrunching */
 }
 
 #leaderboard-list li {
@@ -1250,7 +1287,8 @@ h3 {
     width: 60px;
     /* Increased spacing */
     margin-right: 15px;
-    /* Explicit spacing to name */
+    font-size: 75%;
+    /* 25% smaller */
 }
 
 .name {
@@ -1329,7 +1367,8 @@ h3 {
 
 #shop-items-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns: 1fr;
+    /* Full width list view */
     gap: 15px;
     padding: 10px;
     /* max-height was causing issues if content large? No, this is for shop. */
@@ -1350,7 +1389,7 @@ h3 {
     transition: transform 0.2s, box-shadow 0.2s;
     position: relative;
     /* overflow: hidden;  <-- Removed to prevent cutting off if content grows */
-    min-height: 220px;
+    min-height: auto;
     /* Ensure enough height for icon + text + price + button */
     justify-content: flex-start;
     /* Group items at top */
@@ -1415,9 +1454,11 @@ h3 {
 
 .shop-info h3 {
     margin: 0;
-    font-size: 1.4rem;
-    /* Increased by 40% (1.0 -> 1.4) */
+    font-size: clamp(1.1rem, 5vw, 1.4rem);
+    /* Responsive resizing */
     color: #333;
+    word-break: break-word;
+    /* Prevent overflow */
 }
 
 .shop-info {
@@ -1465,11 +1506,11 @@ h3 {
     flex-direction: column;
     /* Force vertical stack */
     align-items: center;
-    gap: 30px;
-    /* Increased from 10px */
+    gap: 8px;
+    /* Reduced from 30px to bring closer */
     width: 100%;
-    margin-top: 20px;
-    /* Added top margin for "extra space" below title */
+    margin-top: 10px;
+    /* Reduced margin */
 }
 
 .sub-actions {
@@ -1477,6 +1518,8 @@ h3 {
     justify-content: center;
     gap: 15px;
     width: 100%;
+    margin-bottom: 2em;
+    /* User Requested Spacing */
 }
 
 .icon-btn-settings {
@@ -1497,8 +1540,8 @@ h3 {
     align-items: center;
     justify-content: center;
     font-size: 1.5rem;
-    color: #333;
-    /* Dark icon color for contrast */
+    color: #777;
+    /* Medium Gray (was #333) */
 }
 
 .icon-btn-settings:hover {
@@ -1508,13 +1551,17 @@ h3 {
 }
 
 .version-info {
+    position: absolute;
+    bottom: 10px;
+    right: 15px;
     font-size: 0.8rem;
-    color: #ccc;
-    /* Light gray */
-    margin-top: 20px;
-    font-family: sans-serif;
-    opacity: 0.7;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    color: #444;
+    /* Darker gray (was #ccc) */
+    font-family: 'Outfit', sans-serif;
+    opacity: 0.6;
+    text-shadow: none;
+    /* Remove shadow for cleaner look on light bg if applicable, or keep? User asked for darker. */
+    text-align: right;
 }
 
 /* Submit Modal Text Polish */
@@ -1570,4 +1617,39 @@ h3 {
     transform: scale(1.02);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     font-weight: bold;
+}
+
+/* Shop Action Row (v0.7) */
+.shop-action-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-top: 10px;
+    gap: 8px;
+    /* Reduced gap */
+    flex-wrap: wrap;
+    /* Allow wrapping on very small screens */
+}
+
+.shop-action-row.center {
+    justify-content: center;
+}
+
+/* Update Shop Btn to not be full width by default */
+.shop-btn {
+    width: auto;
+    min-width: 60px;
+    /* Smaller minimum */
+    padding: 6px 10px;
+    flex: 1 0 auto;
+    /* Allow growth */
+}
+
+/* Ensure Price looks good in row */
+.shop-price {
+    font-weight: bold;
+    color: #5d4037;
+    font-size: 1rem;
+    white-space: nowrap;
 }

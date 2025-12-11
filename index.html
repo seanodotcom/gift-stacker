@@ -59,7 +59,7 @@
                     <span id="score" class="score-value">0</span>
                 </div>
             </div>
-            <div id="high-score" class="scores-sub-display">High: 0</div>
+            <!-- High score move to end only -->
             <div id="lives-container" class="scores-sub-display hidden">
                 <span>Lives:</span>
                 <div id="lives-icons" style="display:flex; gap:2px;"></div>
@@ -90,7 +90,7 @@
             </div>
 
             <button id="quit-game-btn" class="secondary-btn">Quit Game</button>
-            <button id="release-notes-btn" class="text-link">ℹ️ Gift Stacker v0.6.5</button>
+            <button id="release-notes-btn" class="text-link">ℹ️ Gift Stacker v0.7.0</button>
         </div>
 
         <!-- Quit Confirmation Modal -->
@@ -114,8 +114,15 @@
 
         <!-- Release Notes Modal -->
         <div id="release-notes-modal" class="modal hidden">
-            <h2>Release Notes v0.6.5</h2>
+            <h2>Release Notes v0.7.0</h2>
             <div class="scroll-content">
+                <h3>v0.7.0 - The Shiny Update ✨</h3>
+                <ul>
+                    <li>✨ <strong>Visuals:</strong> Splash screen makeover & cleaner UI style.</li>
+                    <li>📱 <strong>Mobile:</strong> Better layouts for Shop and Leaderboard.</li>
+                    <li>🐛 <strong>Fixes:</strong> Squashed bugs with Pause button and overlapping text.</li>
+                </ul>
+                <hr>
                 <h3>v0.6.5 - The "Zombie Slayer" Update 🧟‍♂️</h3>
                 <ul>
                     <li>🛑 <strong>Critical Fix:</strong> Eliminated the "Zombie Game" bug that caused games to
@@ -180,7 +187,7 @@
                 </div>
             </div>
 
-            <div class="version-info">v0.6.5</div>
+            <div class="version-info">v0.7.0 by Sean O</div>
         </div>
 
         <!-- Shop Modal -->
@@ -279,11 +286,11 @@
     <!-- Game Scripts -->
     <script src="firebase-config.js"></script>
     <script src="leaderboard.js"></script>
-    <script src="snowSystem.js"></script>
+    <!-- Removed snowSystem.js (legacy) -->
 
     <!-- Leaderboard Modal -->
     <div id="leaderboard-modal" class="modal hidden">
-        <h2>Top 10 Scores</h2>
+        <h2>🏆 Top 10 Stackers</h2>
 
         <div id="leaderboard-container">
             <ul id="leaderboard-list">
