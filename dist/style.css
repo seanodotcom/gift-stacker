@@ -129,6 +129,9 @@ html {
     height: 100%;
     pointer-events: none;
     /* Let clicks pass through to game container if needed, or handle on window */
+    transform-origin: top center;
+    transition: transform 0.1s linear;
+    /* Smooth camera movement */
 }
 
 .box {

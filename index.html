@@ -90,7 +90,7 @@
             </div>
 
             <button id="quit-game-btn" class="secondary-btn">Quit Game</button>
-            <button id="release-notes-btn" class="text-link">ℹ️ Gift Stacker v0.8</button>
+            <button id="release-notes-btn" class="text-link">ℹ️ Gift Stacker v0.8.5</button>
         </div>
 
         <!-- Quit Confirmation Modal -->
@@ -114,8 +114,16 @@
 
         <!-- Release Notes Modal -->
         <div id="release-notes-modal" class="modal hidden">
-            <h2>Release Notes v0.8</h2>
+            <h2>Release Notes v0.8.5</h2>
             <div class="scroll-content">
+                <h3>v0.8.5 - The "Holiday Polish" Update 🎄</h3>
+                <ul>
+                    <li>🎁 <strong>First Game Bonus:</strong> New players get a cookie boost! 🍪</li>
+                    <li>🎨 <strong>Visuals:</strong> Dark Red accents and cleaner fonts.</li>
+                    <li>🔴 <strong>status:</strong> Helpful notification dot for the Christmas theme.</li>
+                    <li>🛠️ <strong>Fixes:</strong> Squashed bugs with reset logic and notifications.</li>
+                </ul>
+                <hr>
                 <h3>v0.8 - The "Big Picture" Update 🎥</h3>
                 <ul>
                     <li>🔭 <strong>Dynamic Camera:</strong> The camera now auto-zooms out as you stack higher!</li>
@@ -190,7 +198,7 @@
         <div id="start-screen">
             <img src="logo.png" id="game-logo" alt="Gift Stacker Logo">
             <h1>Gift Stacker</h1>
-            <h2>Stack as many gifts as you can!</h2>
+            <h2>Stack as many gifts as you can.<br>Don't let them fall over!</h2>
             <!-- High Score Removed -->
             <div class="start-actions">
                 <div class="main-actions-row" style="display: flex; align-items: center; gap: 10px;">
@@ -204,106 +212,142 @@
                     </button>
                 </div>
                 <div class="sub-actions">
-                    <button id="shop-btn" class="icon-btn-settings" title="Shop">
-                        🛍️
-                    </button>
-                    <button id="leaderboard-btn" class="icon-btn-settings" title="Leaderboard">
-                        🏆
-                    </button>
-                    <button id="start-share-btn" class="icon-btn-settings" title="Share Game">
-                        📤
-                    </button>
+                    <div class="action-item">
+                        <button id="shop-btn" class="icon-btn-settings" title="Themes">
+                            <div id="christmas-dot" class="notification-dot hidden"></div>
+                            🎨
+                        </button>
+                        <span class="action-label">THEMES</span>
+                    </div>
+                    <div class="action-item">
+                        <button id="leaderboard-btn" class="icon-btn-settings" title="Leaderboard">
+                            🏆
+                        </button>
+                        <span class="action-label">HIGH</span>
+                    </div>
+                    <div class="action-item">
+                        <button id="start-share-btn" class="icon-btn-settings" title="Share Game">
+                            📤
+                        </button>
+                        <span class="action-label">SHARE</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="version-info">v0.8 by Sean O</div>
         </div>
 
-        <!-- Shop Modal -->
-        <div id="shop-modal" class="modal hidden">
-            <h2>🎁 Gift Shop</h2>
-            <div class="shop-header">
-                <span>🍪 You have <span id="shop-bank-display">0</span> cookies</span>
-            </div>
-            <div id="shop-items-container">
-                <!-- Populated by JS -->
-            </div>
-            <button id="close-shop-btn">Close</button>
+        <div class="version-info">v0.8.5 by Sean O</div>
+    </div>
+
+    <!-- Shop Modal -->
+    <div id="shop-modal" class="modal hidden">
+        <h2>🎁 Gift Shop</h2>
+        <div class="shop-header">
+            <span>🍪 You have <span id="shop-bank-display">0</span> cookies</span>
         </div>
-
-        <div id="fps-counter">60</div>
-        <div id="toast" class="hidden"></div>
-
-        <div id="settings-modal" class="modal hidden">
-            <h2>Settings</h2>
-            <div class="setting-row">
-                <label>Difficulty:</label>
-                <div class="toggle-group">
-                    <button id="diff-easy" class="toggle-btn">Easy</button>
-                    <button id="diff-standard" class="toggle-btn active">Standard</button>
-                    <button id="diff-hard" class="toggle-btn">Hard</button>
-                </div>
-            </div>
-            <div class="setting-row">
-                <label>Slide Speed: <span id="slide-speed-val">1.0x</span></label>
-                <input type="range" id="slide-speed" min="0.5" max="2.0" step="0.1" value="1.0">
-            </div>
-            <div class="setting-row">
-                <label>Drop Speed: <span id="drop-speed-val">1.0x</span></label>
-                <input type="range" id="drop-speed" min="0.5" max="2.0" step="0.1" value="1.0">
-            </div>
-            <div class="setting-row">
-                <label>Bounciness: <span id="bounce-val">Normal</span></label>
-                <input type="range" id="bounce" min="0" max="0.5" step="0.05" value="0.5">
-            </div>
-            <div class="setting-row checkbox-row">
-                <input type="checkbox" id="sound-enabled" checked>
-                <label for="sound-enabled">Sound Effects</label>
-            </div>
-            <div class="setting-row checkbox-row">
-                <input type="checkbox" id="random-sizes">
-                <label for="random-sizes">Randomize Gift Box Sizes</label>
-            </div>
-            <div class="setting-row">
-                <label>Theme:</label>
-                <div class="toggle-group">
-                    <button id="theme-christmas" class="toggle-btn active">Christmas</button>
-                    <button id="theme-standard" class="toggle-btn">Standard</button>
-                </div>
-            </div>
-
-            <button id="close-settings-btn">Save</button>
+        <div id="shop-items-container">
+            <!-- Populated by JS -->
         </div>
+        <button id="close-shop-btn">Close</button>
+    </div>
 
-        <div id="game-over-screen" class="hidden">
-            <h1>Game Over</h1>
-            <div id="new-record-msg" class="hidden new-record">New High Score!</div>
-            <div class="gift-score-box large">
-                <div class="lid">
-                    <span class="score-label">Score</span>
-                </div>
-                <div class="box-body">
-                    <span id="final-score" class="score-value">0</span>
-                </div>
-            </div>
-            <div id="game-over-cookie-msg"
-                style="margin-top: -15px; margin-bottom: 20px; font-weight: 900; font-size: 1.3rem; color: #4caf50;">
-            </div>
-            <div class="actions">
-                <button id="home-btn" class="icon-btn-small" title="Home">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                    </svg>
-                </button>
-                <button id="restart-btn">Play Again</button>
-            </div>
-            <div class="high-score-container">
-                <p id="game-over-high-score">High Score: 0</p>
-                <button id="reset-score-btn" class="reset-link-btn">Reset</button>
+    <!-- Welcome Modal -->
+    <div id="welcome-modal" class="modal hidden">
+        <h2>Welcome to Gift Stacker! 🎁</h2>
+        <div class="scroll-content" style="text-align: center; max-height: none; background: transparent;">
+            <p>Great job on your first game!</p>
+            <p>You earn Cookies 🍪 for every gift you stack.</p>
+            <p>Use cookies to unlock cool new <strong>Themes</strong> in the Shop!</p>
+            <hr style="margin: 15px 0;">
+            <p style="color: #4caf50; font-weight: bold; font-size: 1.2rem;">Here's a Welcome Gift:</p>
+            <p style="font-size: 2rem; margin: 10px 0;">+25 🍪</p>
+            <div class="modal-actions">
+                <button id="welcome-ack-btn" class="primary-btn" style="width: 100%; font-size: 1.2rem;">Thanks!
+                    🙏</button>
             </div>
         </div>
+    </div>
+
+    <div id="fps-counter">60</div>
+    <div id="toast" class="hidden"></div>
+
+    <div id="settings-modal" class="modal hidden">
+        <h2>Settings</h2>
+        <div class="setting-row">
+            <label>Difficulty:</label>
+            <div class="toggle-group">
+                <button id="diff-easy" class="toggle-btn">Easy</button>
+                <button id="diff-standard" class="toggle-btn active">Standard</button>
+                <button id="diff-hard" class="toggle-btn">Hard</button>
+            </div>
+        </div>
+        <div class="setting-row">
+            <label>Slide Speed: <span id="slide-speed-val">1.0x</span></label>
+            <input type="range" id="slide-speed" min="0.5" max="2.0" step="0.1" value="1.0">
+        </div>
+        <div class="setting-row">
+            <label>Drop Speed: <span id="drop-speed-val">1.0x</span></label>
+            <input type="range" id="drop-speed" min="0.5" max="2.0" step="0.1" value="1.0">
+        </div>
+        <div class="setting-row">
+            <label>Bounciness: <span id="bounce-val">Normal</span></label>
+            <input type="range" id="bounce" min="0" max="0.5" step="0.05" value="0.5">
+        </div>
+        <div class="setting-row checkbox-row">
+            <input type="checkbox" id="sound-enabled" checked>
+            <label for="sound-enabled">Sound Effects</label>
+        </div>
+        <div class="setting-row checkbox-row">
+            <input type="checkbox" id="random-sizes">
+            <label for="random-sizes">Randomize Gift Box Sizes</label>
+        </div>
+
+        <button id="close-settings-btn">Save</button>
+        <button id="hard-reset-btn" class="secondary-btn"
+            style="background: transparent; border: 1px solid #ef5350; color: #ef5350; width: 33%; margin: 20px auto 0 auto; display: block; font-size: 0.8rem;">Reset
+            Data 🚨</button>
+    </div>
+
+    <!-- Hard Reset Confirmation Modal -->
+    <div id="hard-reset-modal" class="modal hidden">
+        <h2 style="color: #d32f2f;">⚠️ WIPE DATA? ⚠️</h2>
+        <p>This will erase ALL of your progress, cookies, purchases, and high scores.</p>
+        <p><strong>This cannot be undone.</strong></p>
+        <div class="modal-actions">
+            <button id="confirm-reset-btn" style="background: #d32f2f; color: white;">Yes, START OVER</button>
+            <button id="cancel-reset-btn" class="secondary-btn">Cancel</button>
+        </div>
+    </div>
+
+    <div id="game-over-screen" class="hidden">
+        <h1>Game Over</h1>
+        <div id="new-record-msg" class="hidden new-record">New High Score!</div>
+        <div class="gift-score-box large">
+            <div class="lid">
+                <span class="score-label">Score</span>
+            </div>
+            <div class="box-body">
+                <span id="final-score" class="score-value">0</span>
+            </div>
+        </div>
+        <div id="game-over-cookie-msg"
+            style="margin-top: -15px; margin-bottom: 20px; font-weight: 900; font-size: 1.3rem; color: #4caf50;">
+        </div>
+        <div class="actions">
+            <button id="home-btn" class="icon-btn-small" title="Home">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+            </button>
+            <button id="restart-btn">Play Again</button>
+        </div>
+        <div class="high-score-container">
+            <p id="game-over-high-score">High Score: 0</p>
+            <button id="reset-score-btn" class="reset-link-btn">Reset</button>
+        </div>
+    </div>
     </div>
     <div id="scene">
         <!-- Physics bodies will be mapped to DOM elements here -->
@@ -320,6 +364,9 @@
     <!-- Leaderboard Modal -->
     <div id="leaderboard-modal" class="modal hidden">
         <h2>🏆 Top 10 Stackers</h2>
+        <p style="text-align: center; font-size: 0.9rem; color: #666; margin: -10px 0 15px 0; padding: 0 10px;">
+            Check out the high scores from Stackers all over the North Pole... and beyond!
+        </p>
 
         <div id="leaderboard-container">
             <ul id="leaderboard-list">

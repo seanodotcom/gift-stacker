@@ -23,10 +23,9 @@ let highScore = localStorage.getItem('giftStackerHighScore') || 0;
 // Phase 2: Persistence
 let totalScoreBank = parseInt(localStorage.getItem('giftStackerTotalBank')) || 0;
 let unlockedThemes = JSON.parse(localStorage.getItem('giftStackerUnlockedThemes')) || {
-    'christmas': true,
+    'christmas': false,
     'standard': true, // Default unlocked
     'neon': false,
-    '8bit': false,
     'underwater': false
 };
 let isPaused = false;
@@ -36,9 +35,9 @@ const BASE_SPAWNER_SPEED = 6.25;
 const BASE_GRAVITY = 1.4;
 let slideSpeedMult = parseFloat(localStorage.getItem('giftStackerSlideSpeed')) || 1.0;
 let dropSpeedMult = parseFloat(localStorage.getItem('giftStackerDropSpeed')) || 1.0;
-let randomSizes = localStorage.getItem('giftStackerRandomSizes') === 'true'; // Default false unless 'true' string present
+let randomSizes = localStorage.getItem('giftStackerRandomSizes') !== 'false'; // Default true
 let soundEnabled = localStorage.getItem('giftStackerSound') !== 'false'; // Default true
-let currentTheme = localStorage.getItem('giftStackerTheme') || 'christmas';
+let currentTheme = localStorage.getItem('giftStackerTheme') || 'standard'; // Default standard
 
 // v0.4 Difficulty & Lives
 let currentDifficulty = localStorage.getItem('giftStackerDifficulty') || 'standard';
@@ -168,9 +167,6 @@ const soundEnabledInput = document.getElementById('sound-enabled');
 // Theme Buttons in Settings (Only show unlocked?)
 // For now, settings just toggles between Christmas/Standard as legacy, 
 // OR we remove theme toggles from Settings and force use of Shop?
-// Let's keep specific toggles for now but update them to be generic or just link to shop.
-const themeBtnChristmas = document.getElementById('theme-christmas');
-const themeBtnStandard = document.getElementById('theme-standard');
 const bounceInput = document.getElementById('bounce');
 const livesContainer = document.getElementById('lives-container');
 const livesIcons = document.getElementById('lives-icons');
@@ -206,6 +202,10 @@ const leaderboardModal = document.getElementById('leaderboard-modal');
 const closeLeaderboardBtn = document.getElementById('close-leaderboard-btn');
 const submitScoreModal = document.getElementById('submit-score-modal');
 const scoreSubmitVal = document.getElementById('submit-score-val');
+// Welcome Modal Elements
+const welcomeModal = document.getElementById('welcome-modal');
+const welcomeShopBtn = document.getElementById('welcome-shop-btn');
+const welcomeCloseBtn = document.getElementById('welcome-close-btn');
 const playerNameInput = document.getElementById('player-name-input');
 const submitScoreBtn = document.getElementById('submit-score-btn');
 const skipSubmitBtn = document.getElementById('skip-submit-btn');
@@ -251,12 +251,12 @@ const MIN_SPAWN_GAP = 300; // Minimum gap between highest box and spawner (appro
 
 const Shop = {
     themes: {
-        'christmas': { name: 'Christmas', price: 0, desc: 'Festive Holiday' },
         'standard': { name: 'Standard', price: 0, desc: 'Classic Blue' },
-        'neon': { name: 'Neon City', price: 500, desc: 'Cyberpunk Vibes' },
-        '8bit': { name: '8-Bit', price: 1000, desc: 'Retro Pixel Art' },
-        'underwater': { name: 'Underwater', price: 2000, desc: 'Deep Sea' }
+        'christmas': { name: 'Christmas', price: 25, desc: 'Festive Holiday' },
+        'neon': { name: 'Neon City', price: 100, desc: 'Cyberpunk Vibes' },
+        'underwater': { name: 'Underwater', price: 100, desc: 'Deep Sea' }
     },
+
 
     open: function () {
         if (!shopModal) return;
@@ -317,6 +317,22 @@ const Shop = {
             localStorage.setItem('giftStackerUnlockedThemes', JSON.stringify(unlockedThemes));
             this.updateUI();
             showToast(`Purchased ${theme.name}! 🛍️`);
+
+            // Celebrate!
+            if (typeof confetti === 'function') {
+                let colors = ['#ffffff', '#ff0000']; // default
+                if (key === 'neon') colors = ['#0f0c29', '#3b0066', '#00fff2', '#ff00de'];
+                else if (key === 'underwater') colors = ['#0288d1', '#01579b', '#4fc3f7'];
+                else if (key === 'christmas') colors = ['#c62828', '#2e7d32', '#ffd700', '#ffffff'];
+
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: colors,
+                    zIndex: 2000 // Above Shop Modal
+                });
+            }
         }
     },
 
@@ -448,14 +464,34 @@ function init() {
         updateVisualState();
     });
 
-    closeNotesBtn.addEventListener('click', () => {
-        releaseNotesModal.classList.add('hidden');
-        // If game is in progress, go back to pause menu
-        if (gameState === 'PLAYING') {
-            pauseMenuModal.classList.remove('hidden');
-        }
-        updateVisualState();
-    });
+    // Welcome Modal Acknowledgement
+    const welcomeAckBtn = document.getElementById('welcome-ack-btn');
+    if (welcomeAckBtn) {
+        welcomeAckBtn.addEventListener('click', () => {
+            welcomeModal.classList.add('hidden');
+
+            // Show Toast (Delayed slightly for effect)
+            setTimeout(() => {
+                showToast("Check out the Christmas Theme in the Shop! 🎄");
+            }, 300);
+
+            // Restore Correct Screen Logic
+            if (gameState === 'GAMEOVER') {
+                // Check if this was a high score run
+                const minToBeat = (window.Leaderboard && window.Leaderboard.minHighScore) ? Number(window.Leaderboard.minHighScore) : 0;
+                const isGlobalHighScore = (window.Leaderboard && window.Leaderboard.minHighScore === undefined) || score > minToBeat;
+
+                if (score > 0 && isGlobalHighScore) {
+                    submitScoreModal.classList.remove('hidden');
+                    const input = document.getElementById('player-name-input');
+                    if (input) setTimeout(() => input.focus(), 100);
+                } else {
+                    gameOverScreen.classList.remove('hidden');
+                }
+                updateVisualState();
+            }
+        });
+    }
 
     // Shop Listeners
     if (shopBtn) {
@@ -504,13 +540,6 @@ function init() {
     dropSpeedInput.addEventListener('input', updateSettingsUI);
     bounceInput.addEventListener('input', updateSettingsUI);
 
-    themeBtnChristmas.addEventListener('click', () => {
-        applyTheme('christmas');
-    });
-
-    themeBtnStandard.addEventListener('click', () => {
-        applyTheme('standard');
-    });
 
     // Difficulty Listeners
     Object.keys(diffBtns).forEach(key => {
@@ -576,6 +605,39 @@ function init() {
             }
         });
     }
+
+
+    // INPUT HANDLER
+    function handleInput(e) {
+        // IMPORTANT: Allow UI interactions (modals, buttons)
+        if (e.target.closest('.modal') || e.target.closest('button') || e.target.closest('.shop-card')) {
+            return;
+        }
+
+        // Prevent default only if interacting with game canvas/background
+        // and NOT if it's a standard UI interaction
+        // e.preventDefault(); // Actually, let's be careful. Mouse/Touch often needs preventDefault to stop scrolling.
+        // But if we whitelist UI above, we can safely preventDefault here for game touches.
+        if (e.cancelable) e.preventDefault();
+
+        if (gameState === 'START') {
+            // ONLY start if the specific start button was clicked (handled by its own listener)
+            // OR if it's a keyboard event handled elsewhere.
+            // DO NOT start on random clicks.
+            return;
+        }
+
+        if (gameState === 'PLAYING' && !isPaused) {
+            dropBox();
+        }
+
+        if (gameState === 'GAMEOVER') {
+            // Maybe restart on tap? Or force button use. 
+            // Let's force button use for clarity.
+        }
+    }
+
+
 
     // Set gravity
     engine.world.gravity.y = BASE_GRAVITY * dropSpeedMult;
@@ -738,6 +800,9 @@ function updateLivesUI() {
 }
 
 function updateVisualState() {
+    // Check Notification Dot status (Christmas Theme)
+    if (typeof checkNotificationDot === 'function') checkNotificationDot();
+
     // check visual state logic
     const isPausedModal = !pauseMenuModal.classList.contains('hidden');
     const isGameOver = !gameOverScreen.classList.contains('hidden');
@@ -1276,6 +1341,29 @@ function gameOver() {
 
     if (startScreen) startScreen.classList.add('hidden');
     updateVisualState();
+
+    // ONBOARDING CHECK
+    const hasPlayed = localStorage.getItem('giftStackerHasPlayed');
+    if (!hasPlayed) {
+        localStorage.setItem('giftStackerHasPlayed', 'true');
+
+        // Bonus!
+        totalScoreBank += 25;
+        localStorage.setItem('giftStackerTotalBank', totalScoreBank);
+
+        // Show Welcome Modal
+        // We need to hide the Game Over screen temporarily?
+        // Or just show this on top?
+        // Z-index of modals is high.
+
+        setTimeout(() => {
+            // Hide other modals just in case
+            gameOverScreen.classList.add('hidden');
+            submitScoreModal.classList.add('hidden');
+
+            welcomeModal.classList.remove('hidden');
+        }, 500); // Small delay for effect
+    }
 }
 
 
@@ -1399,8 +1487,9 @@ class ParticleSystem {
     clear() {
         this.particles.forEach(p => p.element.remove());
         this.particles = [];
-        this.container.innerHTML = ''; // Ensure clean
+        // this.container.innerHTML = ''; // REMOVED: Do not wipe container, it may contain the tree
     }
+
 
     spawn() {
         if (!this.active || this.particles.length >= this.maxParticles) return;
@@ -1539,7 +1628,8 @@ function openSettings() {
     randomSizesInput.checked = randomSizes;
     soundEnabledInput.checked = soundEnabled;
     // themeSelect.value = currentTheme;
-    updateThemeButtonsUI();
+    // themeSelect.value = currentTheme;
+
 
     bounceInput.value = restitutionVal;
     updateSettingsUI();
@@ -1554,20 +1644,26 @@ function applyTheme(theme) {
     if (!snowSystem) return; // safety
 
     snowSystem.stop();
-    christmasBg.innerHTML = ''; // Clear old particles
+    // christmasBg.innerHTML = ''; // REMOVED: Do not wipe tree
+
+    const bgTree = document.getElementById('bg-tree');
 
     if (theme === 'christmas') {
         christmasBg.style.display = 'block';
+        if (bgTree) bgTree.style.display = 'block'; // Ensure tree is visible
         snowSystem.configure({ type: 'snow', directionY: 1, speedMin: 1, speedMax: 3, symbol: null });
         snowSystem.start();
     } else if (theme === 'underwater') {
         christmasBg.style.display = 'block';
+        if (bgTree) bgTree.style.display = 'none'; // Hide tree
         snowSystem.configure({ type: 'bubbles', directionY: -1, speedMin: 1, speedMax: 2, symbol: '' });
         snowSystem.start();
     } else if (theme === 'neon') {
         christmasBg.style.display = 'block';
+        if (bgTree) bgTree.style.display = 'none'; // Hide tree
         // SE Direction: Right (+0.15) and Down (+1). Rotation -10deg visually (steeper)
-        snowSystem.configure({ type: 'neon', symbol: '', directionY: 1, directionX: 0.15, speedMin: 10, speedMax: 18, rotation: -10, wiggle: false });
+        // Speed reduced by ~40% (10-18 -> 6-11)
+        snowSystem.configure({ type: 'neon', symbol: '', directionY: 1, directionX: 0.15, speedMin: 6, speedMax: 11, rotation: -10, wiggle: false });
         snowSystem.start();
     } else {
         // Standard or default - NO SNOW
@@ -1578,19 +1674,11 @@ function applyTheme(theme) {
 
     currentTheme = theme;
     localStorage.setItem('giftStackerTheme', theme);
-
-    updateThemeButtonsUI();
 }
 
-function updateThemeButtonsUI() {
-    if (!themeBtnChristmas || !themeBtnStandard) return;
 
-    themeBtnChristmas.classList.remove('active');
-    themeBtnStandard.classList.remove('active');
 
-    if (currentTheme === 'christmas') themeBtnChristmas.classList.add('active');
-    else if (currentTheme === 'standard') themeBtnStandard.classList.add('active');
-}
+
 
 function saveSettings() {
     slideSpeedMult = parseFloat(slideSpeedInput.value);
@@ -1841,13 +1929,81 @@ function showToast(msg) {
     toastElement.classList.remove('hidden');
     toastElement.classList.add('show');
 
+
     setTimeout(() => {
         toastElement.classList.remove('show');
-        setTimeout(() => toastElement.classList.add('hidden'), 800);
-    }, 3000);
+        // Wait for CSS transition (2s) to finish before hiding layout
+        setTimeout(() => toastElement.classList.add('hidden'), 2100);
+    }, 4500); // Increased from 3000ms
 }
 
+function checkNotificationDot() {
+    const dot = document.getElementById('christmas-dot');
+    if (!dot) return;
+
+    // Check if Christmas theme is owned
+    const hasChristmas = Shop.owned && Shop.owned['christmas'];
+
+    // Check if player has played at least one game (so they have the cookies)
+    const hasPlayed = localStorage.getItem('giftStackerHasPlayed') === 'true';
+
+    // Show dot if NOT owned AND has played (meaning they can/should go buy it)
+    if (!hasChristmas && hasPlayed) {
+        dot.classList.remove('hidden');
+    } else {
+        dot.classList.add('hidden');
+    }
+}
+
+// HARD RESET LOGIC (Global Event Delegation)
+(function () {
+    console.log("Reset Logic: Initializing Global Delegation...");
+
+    document.addEventListener('click', (e) => {
+        const target = e.target;
+
+        // Helper to check ID or parent ID (for icons inside buttons)
+        const isBtn = (id) => target.id === id || target.closest('#' + id);
+
+        // 1. OPEN RESET MODAL
+        if (isBtn('hard-reset-btn')) {
+            e.preventDefault();
+            console.log("Reset: Opening Modal");
+            const settingsModal = document.getElementById('settings-modal');
+            const hardResetModal = document.getElementById('hard-reset-modal');
+            if (settingsModal) settingsModal.classList.add('hidden');
+            if (hardResetModal) hardResetModal.classList.remove('hidden');
+        }
+
+        // 2. CONFIRM RESET
+        else if (isBtn('confirm-reset-btn')) {
+            e.preventDefault();
+            console.log("Reset: Wiping Data...");
+            // WIPE DATA
+            Object.keys(localStorage).forEach(key => {
+                if (key.startsWith('giftStacker')) {
+                    localStorage.removeItem(key);
+                }
+            });
+            sessionStorage.clear();
+            // Force Reload
+            window.location.reload();
+        }
+
+        // 3. CANCEL RESET
+        else if (isBtn('cancel-reset-btn')) {
+            e.preventDefault();
+            console.log("Reset: Cancelled");
+            const settingsModal = document.getElementById('settings-modal');
+            const hardResetModal = document.getElementById('hard-reset-modal');
+            if (hardResetModal) hardResetModal.classList.add('hidden');
+            if (settingsModal) settingsModal.classList.remove('hidden');
+        }
+    });
+})();
+
 init();
+
 
 function updateUIVisibility(visible) {
     const elements = [scoreContainer, menuBtn, fpsElement, timerContainer];
@@ -1893,3 +2049,4 @@ window.addEventListener('keydown', (e) => {
         }
     }
 });
+
