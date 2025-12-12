@@ -243,6 +243,12 @@ let currentDropTimer = 0;
 let maxDropTime = null; // Seconds, null if disabled
 let timerDelay = 0; // Delay before timer starts dropping (for visual fill)
 
+// Zoom / Camera State
+let spawnerY = 100; // Dynamic spawner height (starts at 100)
+let cameraZoom = 1.0;
+let cameraOffsetY = 0;
+const MIN_SPAWN_GAP = 300; // Minimum gap between highest box and spawner (approx 5 boxes height)
+
 const Shop = {
     themes: {
         'christmas': { name: 'Christmas', price: 0, desc: 'Festive Holiday' },
@@ -598,6 +604,11 @@ function init() {
                 if (bodyA.label === 'box' || bodyB.label === 'box') {
                     // Optional: check speed
                     Sound.playLand();
+
+                    // SWAY FIX: Mark boxes as "Landed" on first collision
+                    // This prevents the camera from tracking falling boxes
+                    if (bodyA.label === 'box') bodyA.isFalling = false;
+                    if (bodyB.label === 'box') bodyB.isFalling = false;
                 }
             }
 
@@ -789,6 +800,13 @@ function startGame() {
     startScreen.classList.add('hidden');
     gameOverScreen.classList.add('hidden');
     newRecordMsg.classList.add('hidden'); // Hide new record msg on start
+
+    // Reset Zoom
+    cameraZoom = 1.0;
+    cameraOffsetY = 0;
+    spawnerY = 100;
+    sceneElement.style.transform = `scale(1)`;
+
     updateVisualState();
 
     // Tutorial Toast (Once per session)
@@ -886,7 +904,12 @@ function spawnBox() {
         boxRestitution = Math.random() * restitutionVal;
     }
 
-    currentBox = Bodies.rectangle(spawnerX, 100, currentWidth, currentHeight, {
+    if (randomSizes) {
+        // Randomize bounciness between 0 and set value
+        boxRestitution = Math.random() * restitutionVal;
+    }
+
+    currentBox = Bodies.rectangle(spawnerX, spawnerY, currentWidth, currentHeight, {
         isStatic: true,
         label: 'box',
         restitution: boxRestitution,
@@ -900,6 +923,8 @@ function spawnBox() {
 
     // Custom property to track if this box has contributed to score
     currentBox.hasScored = false;
+    // SWAY FIX: Track if box is currently falling
+    currentBox.isFalling = true; // Set to false on collision
 
     Composite.add(engine.world, currentBox);
     createDomElement(currentBox, 'box');
@@ -1005,7 +1030,15 @@ function update() {
             lastFpsTime = now;
         }
 
+
+
         // SCORING ODOMETER ANIMATION REMOVED - Handled by CSS Transitions in animateScoreUI
+
+
+        // Update Camera Zoom Logic
+        if (gameState === 'PLAYING') {
+            updateCamera(dt);
+        }
 
 
         updateDebugDisplay();
@@ -1064,7 +1097,7 @@ function update() {
                 // Clamp position to be safe
                 spawnerX = Math.max(boxSize / 2, Math.min(width - boxSize / 2, spawnerX));
 
-                Body.setPosition(currentBox, { x: spawnerX, y: 100 });
+                Body.setPosition(currentBox, { x: spawnerX, y: spawnerY });
                 Body.setVelocity(currentBox, { x: 0, y: 0 }); // Reset velocity just in case
             }
 
@@ -1107,6 +1140,9 @@ function update() {
                 div.style.transform = `translate(${x - w / 2}px, ${y - h / 2}px) rotate(${angle}rad)`;
             }
         });
+
+        // Apply Camera Transform
+        sceneElement.style.transform = `scale(${cameraZoom}) translateY(${cameraOffsetY}px)`;
 
         requestAnimationFrame(update);
     } catch (e) {
@@ -1599,6 +1635,126 @@ function updateSettingsUI() {
 
 // Helper to darken colors
 function adjustColor(color, amount) {
+    return '#' + color.replace(/^#/, '').replace(/../g, color => ('0' + Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).substr(-2));
+}
+
+function updateCamera(dt) {
+    // 1. Find Highest Box Y (Minimum Y value)
+    let highestY = window.innerHeight - 50; // Default to platform level
+
+    // Check all boxes that have landed (not the current falling one)
+    // Actually check all dynamic boxes except the one currently held by spawner?
+    // Or just all boxes. If currentBox is static, it's at spawnerY. We care about the stack.
+
+    // Filter for stacked boxes
+    const stackedBoxes = boxes.filter(b => !b.isStatic && !b.lostLife);
+
+    if (stackedBoxes.length > 0) {
+        // Find min Y
+        const topBox = stackedBoxes.reduce((min, b) => b.position.y < min.position.y ? b : min, stackedBoxes[0]);
+        highestY = topBox.position.y - (boxSize / 2); // Top edge of top box
+    }
+
+    // 2. Calculate Target Spawner Y
+    // We want the spawner to be at least MIN_SPAWN_GAP above the highest box.
+    // But max 100 (initial position).
+    // Coordinate system: 0 is top. Smaller Y is higher up.
+    // So if highestY is 500, and GAP is 300, target is 200.
+    // If highestY is 200, target is -100.
+
+    let targetSpawnerY = Math.min(100, highestY - MIN_SPAWN_GAP);
+
+    // 3. Smoothly interpolate Spawner Y
+    // simple lerp
+    const lerpSpeed = 0.05; // 5% per frame
+    spawnerY = spawnerY + (targetSpawnerY - spawnerY) * lerpSpeed;
+
+    // 4. Calculate Camera Zoom & Offset
+    // We want to keep the platform visible at the bottom? 
+    // Or just ensure the Spawner is visible at the top?
+    // Let's try to fit [SpawnerY - Padding, PlatformY + Padding] into Window Height.
+
+    const visibleTop = spawnerY - 100; // Padding above spawner
+    const visibleBottom = window.innerHeight - 20; // Keep platform near bottom
+
+    const requiredHeight = visibleBottom - visibleTop;
+    const availableHeight = window.innerHeight;
+
+    let targetZoom = availableHeight / requiredHeight;
+
+    // Clamp zoom (don't zoom IN more than 1.0, don't zoom OUT too far, e.g. 0.3)
+    targetZoom = Math.max(0.3, Math.min(1.0, targetZoom));
+
+    // Smooth Zoom
+    cameraZoom = cameraZoom + (targetZoom - cameraZoom) * lerpSpeed;
+
+    // 5. Calculate Offset
+    // We want to center the content or anchor bottom?
+    // Ideally, the platform stays at screen bottom when scaled?
+    // When scaled, coordinate Y becomes Y * Zoom.
+    // We want (PlatformY * Zoom) + OffsetY = ScreenBottom
+    // OffsetY = ScreenBottom - (PlatformY * Zoom)
+
+    // Actually, let's try to anchor relative to the visible area logic.
+    // If we scale from 'top center', 0 stays at 0.
+    // We want the 'visibleTop' to be near 0 on screen?
+    // No, we want the view to look natural.
+
+    // Let's anchor the "Virtual Center" of our required rect to the Screen Center.
+    // Virtual Center = (visibleTop + visibleBottom) / 2
+    // Screen Center = window.innerHeight / 2
+
+    // But Render Transform is `scale(z) translateY(o)`.
+    // Wait, Order: `scale` then `translate`. 
+    // CSS Transform: functions are applied right to left visually... wait.
+    // Standard CSS: transform: scale(z) translate(y); 
+    // Means: First translate, THEN scale? No. 
+    // transform="scale(2) translate(10px)" -> Scale everything by 2. The 10px translate inside becomes 20px on screen? 
+    // Let's stick to simple:
+    // transform-origin: top center;
+    // We want to shift the world UP so that the relevant part fits.
+    // If we shift world by Y, then scale.
+    // Let's invoke the formula:
+    // ScreenY = (WorldY + OffsetY) * Zoom
+    // We want WorldY=PlatformBottom to be at ScreenY=WindowHeight (approx)
+    // WindowHeight = (PlatformBottom + OffsetY) * Zoom
+    // OffsetY = (WindowHeight / Zoom) - PlatformBottom
+
+    // Let's try anchoring the Platform Bottom to the exact same visual spot (Screen Bottom - margin)
+    const platformVisualY = window.innerHeight - 50;
+    // (platformVisualY + OffsetY) * Zoom = platformVisualY ? No.
+    // We want the bottom of the platform (approx window.innerHeight) to stay at window.innerHeight.
+
+    const worldBottom = window.innerHeight;
+    // targetOffsetY = (worldBottom / targetZoom) - worldBottom; ???
+
+    // Let's think: 
+    // Spawner moves UP (negative). e.g. -200.
+    // We need to see -200.
+    // Zoom = 0.5.
+    // With Zoom 0.5, -200 becomes -100. Still off screen if origin is 0.
+    // We need to move the world DOWN so that -200 (or near it) is visible.
+
+    // Use the logic:
+    // We want to map `visibleTop` (e.g. -300) to `margin` (e.g. 50px).
+    // (visibleTop + OffsetY) * Zoom = 50
+    // OffsetY = (50 / Zoom) - visibleTop
+
+    // Let's try balancing centering.
+    // MidPointWorld = (visibleTop + visibleBottom) / 2
+    // MidPointScreen = window.innerHeight / 2
+    // (MidPointWorld + OffsetY) * Zoom = MidPointScreen
+    // OffsetY = (MidPointScreen / Zoom) - MidPointWorld
+
+    const midWorld = (visibleTop + visibleBottom) / 2;
+    const midScreen = window.innerHeight / 2;
+
+    const targetOffset = (midScreen / cameraZoom) - midWorld;
+
+    // Smooth Offset
+    cameraOffsetY = cameraOffsetY + (targetOffset - cameraOffsetY) * lerpSpeed;
+}
+function adjustColor(color, amount) {
     if (!color) return '#000000'; // Safety check
     return '#' + color.replace(/^#/, '').replace(/../g, color => ('0' + Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).substr(-2));
 }
@@ -1711,10 +1867,10 @@ function openShareModal(scoreVal = 0) {
     updateVisualState();
 
     const appUrl = window.location.href;
-    let msg = `How high can YOU stack those gifts ? 🎁\nPlay Gift Stacker & find out! ${appUrl} `;
+    let msg = `How many gifts can YOU stack? 🎁\nPlay Gift Stacker & find out! ${appUrl}`;
 
     if (scoreVal > 0) {
-        msg = `I just stacked ${scoreVal} gifts! How high can YOU stack them ? 🎁\nPlay Gift Stacker & find out! ${appUrl} `;
+        msg = `I just stacked ${scoreVal} gifts! How many can YOU stack? 🎁\nPlay Gift Stacker & find out! ${appUrl}`;
     }
 
     if (shareText) {
