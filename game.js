@@ -46,7 +46,7 @@ let maxLives = 3;
 let platformWidthPct = 0.48;
 const DIFFICULTIES = {
     easy: { slide: 0.5, drop: 0.8, bounce: 0, lives: 5, widthPct: 0.58, dropTime: null },
-    standard: { slide: 1.0, drop: 1.0, bounce: 0.05, lives: 3, widthPct: 0.48, dropTime: 11 },
+    standard: { slide: 1.0, drop: 1.0, bounce: 0.0, lives: 3, widthPct: 0.48, dropTime: 11 },
     hard: { slide: 1.5, drop: 1.4, bounce: 0.12, lives: 1, widthPct: 0.42, dropTime: 7 }
 };
 
@@ -461,6 +461,12 @@ function init() {
     releaseNotesBtn.addEventListener('click', () => {
         pauseMenuModal.classList.add('hidden');
         releaseNotesModal.classList.remove('hidden');
+        updateVisualState();
+    });
+
+    closeNotesBtn.addEventListener('click', () => {
+        releaseNotesModal.classList.add('hidden');
+        pauseMenuModal.classList.remove('hidden');
         updateVisualState();
     });
 
@@ -955,7 +961,11 @@ function spawnBox() {
     let currentHeight = boxSize;
 
     if (randomSizes) {
-        const variance = 0.15; // 15%
+        let variance = 0.10; // Default Standard
+
+        if (currentDifficulty === 'easy') variance = 0.05;
+        else if (currentDifficulty === 'hard') variance = 0.20;
+
         const widthFactor = 1 + (Math.random() * variance * 2 - variance);
         const heightFactor = 1 + (Math.random() * variance * 2 - variance);
         currentWidth = boxSize * widthFactor;
@@ -1062,9 +1072,17 @@ function createDomElement(body, className) {
 
     // Random color for boxes
     if (className === 'box') {
-        const colors = ['#d32f2f', '#1976d2', '#388e3c', '#fbc02d', '#7b1fa2'];
+        // v0.8.7 Visuals: Added Teal (#0097a7), Orange (#f57c00). Removed Yellow.
+        const colors = ['#d32f2f', '#1976d2', '#388e3c', '#f57c00', '#7b1fa2', '#0097a7'];
         const randomColor = colors[Math.floor(Math.random() * colors.length)];
-        div.style.backgroundColor = randomColor;
+
+        // Gradient Effect (135deg, Lighter -> Base)
+        // User Feedback: "Too dark". Boost brightness significantly.
+        const lightColor = adjustColor(randomColor, 80);
+        const midColor = adjustColor(randomColor, 20);
+        div.style.background = `linear-gradient(135deg, ${lightColor}, ${midColor})`;
+
+        // solid bg fallback/base logic handled by gradient mainly, but border darker
         div.style.borderColor = adjustColor(randomColor, -20);
 
         // Random Ribbon Color
@@ -1735,7 +1753,8 @@ function updateCamera(dt) {
     // Or just all boxes. If currentBox is static, it's at spawnerY. We care about the stack.
 
     // Filter for stacked boxes
-    const stackedBoxes = boxes.filter(b => !b.isStatic && !b.lostLife);
+    // Filter for stacked boxes (only ones that have landed/scored)
+    const stackedBoxes = boxes.filter(b => !b.isStatic && !b.lostLife && b.hasScored);
 
     if (stackedBoxes.length > 0) {
         // Find min Y
@@ -1772,6 +1791,26 @@ function updateCamera(dt) {
 
     // Clamp zoom (don't zoom IN more than 1.0, don't zoom OUT too far, e.g. 0.3)
     targetZoom = Math.max(0.3, Math.min(1.0, targetZoom));
+
+    // v0.8.7 CAMERA LOGIC UPDATE
+    // Delay zoom-out until stack height > 4 boxes (approx 240px)
+    // We check (Platform Y - Highest Y)
+    // Platform top is roughly window.innerHeight - 50 - (PLATFORM_HEIGHT/2) ... actually let's use the calc:
+    // highestY is the top of the top box.
+    // Platform Y (surface) is roughly window.innerHeight - 50 - 10 = -60 from bottom?
+    // Let's use relative height from spawner bottom?
+    // Logic: If highestY is > (window.innerHeight - 50 - (boxSize * 4)), keep zoom 1.0
+
+    // Platform Surface Y approx:
+    const platformSurfaceY = window.innerHeight - 50 - (PLATFORM_HEIGHT / 2);
+    const currentStackHeight = platformSurfaceY - highestY;
+    const thresh = boxSize * 4;
+
+    if (currentStackHeight < thresh) {
+        targetZoom = 1.0;
+        // Also force offset to 0 if we want it completely static?
+        // Yes, to prevent sway before necessary.
+    }
 
     // Smooth Zoom
     cameraZoom = cameraZoom + (targetZoom - cameraZoom) * lerpSpeed;
@@ -1841,6 +1880,12 @@ function updateCamera(dt) {
 
     // Smooth Offset
     cameraOffsetY = cameraOffsetY + (targetOffset - cameraOffsetY) * lerpSpeed;
+
+    // v0.8.7 Lock Offset if locked zoom
+    if (cameraZoom > 0.99 && currentStackHeight < thresh) {
+        cameraOffsetY = cameraOffsetY * 0.9; // Decay to 0
+        if (Math.abs(cameraOffsetY) < 1) cameraOffsetY = 0;
+    }
 }
 function adjustColor(color, amount) {
     if (!color) return '#000000'; // Safety check
@@ -2000,6 +2045,69 @@ function checkNotificationDot() {
             if (settingsModal) settingsModal.classList.remove('hidden');
         }
     });
+})();
+
+// EASTER EGG: v0.6.7 "Six Seven" Animation
+(function () {
+    const versionText = document.getElementById('version-text');
+    if (versionText) {
+        versionText.style.cursor = 'pointer';
+        versionText.addEventListener('click', () => {
+            // Refactored sequence function
+            const playSequence = () => {
+                // 1. Text Pulse
+                versionText.classList.remove('six-seven-anim');
+                void versionText.offsetWidth;
+                versionText.classList.add('six-seven-anim');
+
+                if (Sound && Sound.ctx) {
+                    const uiLayer = document.getElementById('ui-layer');
+
+                    // --- STEP 1: "Six" (Red) ---
+                    Sound.playTone(880, 'square', 0.1, 0.2);
+                    const six = document.createElement('div');
+                    six.className = 'floating-number fn-6';
+                    six.innerText = '6';
+                    if (uiLayer) uiLayer.appendChild(six);
+                    setTimeout(() => six.remove(), 1000);
+
+                    // --- STEP 2: "Sev" (Green) ---
+                    setTimeout(() => {
+                        Sound.playTone(830.6, 'square', 0.1, 0.2);
+                        const seven = document.createElement('div');
+                        seven.className = 'floating-number fn-7';
+                        seven.innerText = '7';
+                        seven.style.right = '50px';
+                        if (uiLayer) uiLayer.appendChild(seven);
+                        setTimeout(() => seven.remove(), 1000);
+                    }, 400);
+
+                    // --- STEP 3: "!" (Blue) ---
+                    setTimeout(() => {
+                        Sound.playTone(880, 'square', 0.1, 0.4);
+                        const excl = document.createElement('div');
+                        excl.className = 'floating-number fn-excl';
+                        excl.innerText = '!';
+                        excl.style.right = '70px';
+                        if (uiLayer) uiLayer.appendChild(excl);
+                        setTimeout(() => excl.remove(), 1000);
+                    }, 800);
+                }
+            };
+
+            // Play Twice (Debounced)
+            if (versionText.dataset.playing === "true") return;
+            versionText.dataset.playing = "true";
+
+            playSequence();
+            setTimeout(playSequence, 1400);
+
+            // Allow re-trigger after full sequence (approx 2.5s)
+            setTimeout(() => {
+                versionText.dataset.playing = "false";
+            }, 2600);
+        });
+    }
 })();
 
 init();
