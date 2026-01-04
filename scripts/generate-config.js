@@ -7,6 +7,9 @@ const targetPath = path.join(__dirname, '..', 'firebase-config.js');
 
 const cleanEnv = (val) => val ? val.replace(/['";]/g, '').trim() : undefined;
 
+// DEBUG: Log ALL available keys (to see if we have a mismatch)
+console.log("Available Env Vars:", Object.keys(process.env).join(', '));
+
 // DEBUG: Log Env Vars (Masked)
 const logEnv = (key) => {
     const val = process.env[key];
