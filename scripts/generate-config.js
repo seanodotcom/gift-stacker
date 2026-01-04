@@ -8,15 +8,24 @@ const targetPath = path.join(__dirname, '..', 'firebase-config.js');
 const cleanEnv = (val) => val ? val.replace(/['";]/g, '').trim() : undefined;
 
 // DEBUG: Log ALL available keys (to see if we have a mismatch)
-console.log("Available Env Vars:", Object.keys(process.env).join(', '));
+console.log("Available Env Vars:", JSON.stringify(Object.keys(process.env).sort()));
 
 // DEBUG: Log Env Vars (Masked)
 const logEnv = (key) => {
     const val = process.env[key];
-    if (!val) {
-        console.warn(`[WARNING] Missing Env Var: ${key}`);
+    if (val === undefined) {
+        console.warn(`[WARNING] Env Var ${key} is UNDEFINED`);
         return undefined;
     }
+    if (val === '') {
+        console.warn(`[WARNING] Env Var ${key} is EMPTY STRING (Check Vercel Settings)`);
+        return undefined;
+    }
+    if (!val) {
+        console.warn(`[WARNING] Env Var ${key} is FALSY (${val})`);
+        return undefined;
+    }
+
     const safeVal = cleanEnv(val);
     const masked = safeVal.length > 5 ? `${safeVal.substring(0, 3)}...` : '***';
     console.log(`[INFO] Found ${key}: ${masked}`);
