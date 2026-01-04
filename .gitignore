@@ -1,3 +1,9 @@
 node_modules/
 .DS_Store
 *.log
+
+# Secrets
+firebase-config.js
+
+# Build Artifacts
+dist/
