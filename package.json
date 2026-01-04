@@ -1,0 +1,11 @@
+{
+  "name": "gift-stacker",
+  "version": "0.8.8",
+  "description": "A physics-based stacking game",
+  "scripts": {
+    "build": "node scripts/generate-config.js"
+  },
+  "keywords": [],
+  "author": "Sean O",
+  "license": "ISC"
+}
