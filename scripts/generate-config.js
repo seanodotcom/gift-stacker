@@ -45,6 +45,8 @@ if (missingKeys.length > 0) {
 const fileContent = `// Firebase Configuration (Generated)
 const firebaseConfig = ${JSON.stringify(firebaseConfig, null, 4)};
 
+console.log("[DEBUG] Loaded Firebase Config:", firebaseConfig);
+
 // Initialize Firebase
 if (typeof firebase !== 'undefined') {
     firebase.initializeApp(firebaseConfig);
