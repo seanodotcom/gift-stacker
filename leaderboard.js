@@ -34,6 +34,12 @@ const Leaderboard = {
 
         leaderboardList.innerHTML = '<li class="loading">Loading...</li>';
 
+        if (typeof db === 'undefined') {
+            console.error("FATAL: 'db' is undefined. Firebase initialization failed.");
+            leaderboardList.innerHTML = '<li class="error">Connection Error: Refresh or Check Config</li>';
+            return;
+        }
+
         db.collection("scores")
             .orderBy("score", "desc")
             .limit(limit)
