@@ -12,6 +12,11 @@ const Leaderboard = {
         // Simple validation
         const safeName = name.substring(0, 12).replace(/[^a-zA-Z0-9 ]/g, "");
 
+        if (typeof db === 'undefined') {
+            console.error("Cannot submit score: database not connected.");
+            return;
+        }
+
         db.collection("scores").add({
             name: safeName,
             score: score,
@@ -65,11 +70,16 @@ const Leaderboard = {
                         }
                     }
 
-                    li.innerHTML = `
-                        <span class="rank ${rankClass}">#${rank}</span>
-                        <span class="name">${data.name}</span>
-                        <span class="score">${data.score}</span>
-                    `;
+                    const rankEl = document.createElement('span');
+                    rankEl.className = `rank ${rankClass}`;
+                    rankEl.textContent = `#${rank}`;
+                    const nameEl = document.createElement('span');
+                    nameEl.className = 'name';
+                    nameEl.textContent = String(data.name);
+                    const scoreEl = document.createElement('span');
+                    scoreEl.className = 'score';
+                    scoreEl.textContent = String(data.score);
+                    li.append(rankEl, nameEl, scoreEl);
                     leaderboardList.appendChild(li);
                     rank++;
                 });

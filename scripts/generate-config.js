@@ -7,10 +7,7 @@ const targetPath = path.join(__dirname, '..', 'firebase-config.js');
 
 const cleanEnv = (val) => val ? val.replace(/['";]/g, '').trim() : undefined;
 
-// DEBUG: Log ALL available keys (to see if we have a mismatch)
-console.log("Available Env Vars:", JSON.stringify(Object.keys(process.env).sort()));
-
-// DEBUG: Log Env Vars (Masked)
+// Read an env var, warning if it is missing or empty
 const logEnv = (key) => {
     const val = process.env[key];
     if (val === undefined) {
@@ -26,10 +23,7 @@ const logEnv = (key) => {
         return undefined;
     }
 
-    const safeVal = cleanEnv(val);
-    const masked = safeVal.length > 5 ? `${safeVal.substring(0, 3)}...` : '***';
-    console.log(`[INFO] Found ${key}: ${masked}`);
-    return safeVal;
+    return cleanEnv(val);
 };
 
 const firebaseConfig = {
@@ -53,8 +47,6 @@ if (missingKeys.length > 0) {
 
 const fileContent = `// Firebase Configuration (Generated)
 const firebaseConfig = ${JSON.stringify(firebaseConfig, null, 4)};
-
-console.log("[DEBUG] Loaded Firebase Config:", firebaseConfig);
 
 // Initialize Firebase
 if (typeof firebase !== 'undefined') {

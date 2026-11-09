@@ -19,7 +19,7 @@ let platform = null;
 let gameInterval = null;
 let gameState = 'START';
 let score = 0;
-let highScore = localStorage.getItem('giftStackerHighScore') || 0;
+let highScore = parseFloat(localStorage.getItem('giftStackerHighScore')) || 0;
 // Phase 2: Persistence
 let totalScoreBank = parseInt(localStorage.getItem('giftStackerTotalBank')) || 0;
 let unlockedThemes = JSON.parse(localStorage.getItem('giftStackerUnlockedThemes')) || {
